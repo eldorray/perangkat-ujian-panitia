@@ -215,7 +215,7 @@
                                 <div class="p-3 bg-gray-100 rounded-lg">
                                     <span class="text-xs text-gray-500">API Endpoint:</span>
                                     <p class="text-sm font-mono text-gray-700">
-                                        {{ env('SYNC_API_BASE_URL', 'http://localhost:8000') }}/api/{{ $selectedApiSource }}/all
+                                        {{ env('SYNC_API_BASE_URL', 'https://datainduk.ypdhalmadani.sch.id') }}/api/{{ $selectedApiSource }}/all
                                     </p>
                                 </div>
                             @endif

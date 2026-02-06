@@ -399,7 +399,7 @@
                                     <li>Data akan diambil dari API:
                                         @if ($selectedApiSource)
                                             <code
-                                                class="bg-blue-100 px-1 rounded">{{ env('SYNC_API_BASE_URL', 'http://localhost:8000') }}/api/{{ $selectedApiSource }}/all</code>
+                                                class="bg-blue-100 px-1 rounded">{{ env('SYNC_API_BASE_URL', 'https://datainduk.ypdhalmadani.sch.id') }}/api/{{ $selectedApiSource }}/all</code>
                                         @else
                                             <code class="bg-gray-100 px-1 rounded text-gray-500">Pilih sumber data
                                                 terlebih dahulu</code>

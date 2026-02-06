@@ -225,13 +225,13 @@ class SiswaManagement extends Component
             $updated = 0;
             $failed = 0;
             $errors = [];
-            
+
             // Handle pagination - start from page 1
             $page = 1;
             $hasMorePages = true;
-            $apiBaseUrl = env('SYNC_API_BASE_URL', 'http://localhost:8000');
+            $apiBaseUrl = env('SYNC_API_BASE_URL', 'https://datainduk.ypdhalmadani.sch.id');
             $baseUrl = "{$apiBaseUrl}/api/{$this->selectedApiSource}/all";
-            
+
             while ($hasMorePages) {
                 $response = Http::timeout(60)->get($baseUrl, ['page' => $page]);
 
@@ -242,10 +242,10 @@ class SiswaManagement extends Component
                 }
 
                 $data = $response->json();
-                
+
                 // Handle different API response structures (Laravel pagination or plain array)
                 $siswas = $data['data'] ?? $data;
-                
+
                 if (!is_array($siswas)) {
                     $this->syncResult['message'] = 'Format response API tidak valid.';
                     $this->isSyncing = false;
@@ -260,7 +260,7 @@ class SiswaManagement extends Component
                         $nisn = $siswaData['nisn'] ?? null;
                         $nik = $siswaData['nik'] ?? null;
                         $jenisKelamin = $siswaData['jenis_kelamin'] ?? $siswaData['gender'] ?? null;
-                        
+
                         // Normalize jenis_kelamin
                         if ($jenisKelamin) {
                             if (in_array(strtolower($jenisKelamin), ['laki-laki', 'male', 'l'])) {
@@ -305,7 +305,7 @@ class SiswaManagement extends Component
                         if (!$existingSiswa && $nik) {
                             $existingSiswa = Siswa::where('nik', $nik)->first();
                         }
-                        
+
                         if ($existingSiswa) {
                             $existingSiswa->update($syncData);
                             $updated++;
@@ -323,13 +323,13 @@ class SiswaManagement extends Component
                 $lastPage = $data['last_page'] ?? 1;
                 $currentPage = $data['current_page'] ?? $page;
                 $nextPageUrl = $data['next_page_url'] ?? null;
-                
+
                 if ($nextPageUrl || $currentPage < $lastPage) {
                     $page++;
                 } else {
                     $hasMorePages = false;
                 }
-                
+
                 // Safety check - prevent infinite loop
                 if ($page > 1000) {
                     $hasMorePages = false;

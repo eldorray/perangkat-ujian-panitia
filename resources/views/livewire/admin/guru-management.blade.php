@@ -69,7 +69,7 @@
                             <td>{{ $guru->gender_label }}</td>
                             <td>
                                 <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                     {{ $guru->status_pegawai === 'PNS' ? 'bg-blue-100 text-blue-800' : ($guru->status_pegawai === 'GTY' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800') }}">
                                     {{ $guru->status_pegawai }}
                                 </span>
@@ -383,7 +383,7 @@
                                     <li>Data akan diambil dari API:
                                         @if ($selectedApiSource)
                                             <code
-                                                class="bg-blue-100 px-1 rounded">{{ env('SYNC_API_BASE_URL', 'http://localhost:8000') }}/api/{{ $selectedApiSource }}/all</code>
+                                                class="bg-blue-100 px-1 rounded">{{ env('SYNC_API_BASE_URL', 'https://datainduk.ypdhalmadani.sch.id') }}/api/{{ $selectedApiSource }}/all</code>
                                         @else
                                             <code class="bg-gray-100 px-1 rounded text-gray-500">Pilih sumber data
                                                 terlebih dahulu</code>

@@ -18,6 +18,7 @@ class KegiatanUjian extends Model
         'keterangan',
         'ketua_panitia',
         'nip_ketua_panitia',
+        'tanggal_dokumen',
         'is_locked',
         'lock_pin',
         'locked_at',
@@ -27,6 +28,7 @@ class KegiatanUjian extends Model
     protected $casts = [
         'is_locked' => 'boolean',
         'locked_at' => 'datetime',
+        'tanggal_dokumen' => 'date',
     ];
 
     public function tahunAjaran(): BelongsTo

@@ -463,7 +463,7 @@
                     <div class="signature-section">
                         <div class="signature-box">
                             <div class="signature-date">{{ $schoolSettings['kabupaten'] ?? 'Kota' }},
-                                {{ now()->translatedFormat('d F Y') }}</div>
+                                {{ ($kegiatanUjian->tanggal_dokumen ?? now())->translatedFormat('d F Y') }}</div>
                             <div class="signature-title">Ketua Panitia,</div>
                             <div class="signature-name">
                                 {{ $kegiatanUjian->ketua_panitia ?? '.............................' }}</div>

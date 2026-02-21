@@ -247,6 +247,16 @@
                                         @enderror
                                     </div>
                                 </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium mb-1">Tanggal Dokumen</label>
+                                    <input type="date" wire:model="tanggal_dokumen" class="input w-full">
+                                    <p class="text-xs text-gray-400 mt-1">Tanggal yang tercetak di dokumen (kartu
+                                        peserta, jadwal ujian, dll). Kosongkan untuk menggunakan tanggal hari ini.</p>
+                                    @error('tanggal_dokumen')
+                                        <span class="text-red-500 text-sm">{{ $message }}</span>
+                                    @enderror
+                                </div>
                             </div>
                             <div
                                 class="border-t border-gray-200 bg-gray-50 px-6 py-4 flex justify-end gap-3 rounded-b-2xl">

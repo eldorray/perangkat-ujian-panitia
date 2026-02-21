@@ -29,6 +29,7 @@ class KegiatanUjianManagement extends Component
     public string $keterangan = '';
     public string $ketua_panitia = '';
     public string $nip_ketua_panitia = '';
+    public ?string $tanggal_dokumen = null;
 
     // Lock/Unlock properties
     public bool $showLockModal = false;
@@ -48,6 +49,7 @@ class KegiatanUjianManagement extends Component
             'keterangan' => 'nullable|string|max:500',
             'ketua_panitia' => 'nullable|string|max:255',
             'nip_ketua_panitia' => 'nullable|string|max:50',
+            'tanggal_dokumen' => 'nullable|date',
         ];
     }
 
@@ -69,7 +71,7 @@ class KegiatanUjianManagement extends Component
 
     public function create(): void
     {
-        $this->reset(['nama_ujian', 'tahun_ajaran_id', 'sk_number', 'keterangan', 'ketua_panitia', 'nip_ketua_panitia', 'editingId']);
+        $this->reset(['nama_ujian', 'tahun_ajaran_id', 'sk_number', 'keterangan', 'ketua_panitia', 'nip_ketua_panitia', 'tanggal_dokumen', 'editingId']);
         $this->showModal = true;
     }
 
@@ -90,6 +92,7 @@ class KegiatanUjianManagement extends Component
         $this->keterangan = $kegiatan->keterangan ?? '';
         $this->ketua_panitia = $kegiatan->ketua_panitia ?? '';
         $this->nip_ketua_panitia = $kegiatan->nip_ketua_panitia ?? '';
+        $this->tanggal_dokumen = $kegiatan->tanggal_dokumen?->format('Y-m-d');
         $this->showModal = true;
     }
 
@@ -104,6 +107,7 @@ class KegiatanUjianManagement extends Component
             'keterangan' => $this->keterangan ?: null,
             'ketua_panitia' => $this->ketua_panitia ?: null,
             'nip_ketua_panitia' => $this->nip_ketua_panitia ?: null,
+            'tanggal_dokumen' => $this->tanggal_dokumen ?: null,
         ];
 
         if ($this->editingId) {
@@ -213,7 +217,7 @@ class KegiatanUjianManagement extends Component
     {
         $this->showModal = false;
         $this->showDeleteModal = false;
-        $this->reset(['nama_ujian', 'tahun_ajaran_id', 'sk_number', 'keterangan', 'ketua_panitia', 'nip_ketua_panitia', 'editingId', 'deletingId']);
+        $this->reset(['nama_ujian', 'tahun_ajaran_id', 'sk_number', 'keterangan', 'ketua_panitia', 'nip_ketua_panitia', 'tanggal_dokumen', 'editingId', 'deletingId']);
         $this->resetValidation();
     }
 

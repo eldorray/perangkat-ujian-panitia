@@ -225,6 +225,28 @@
                                         <span class="text-red-500 text-sm">{{ $message }}</span>
                                     @enderror
                                 </div>
+
+                                <hr class="border-gray-200">
+                                <h4 class="text-sm font-semibold text-gray-700">Panitia Ujian</h4>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">Nama Ketua Panitia</label>
+                                        <input type="text" wire:model="ketua_panitia" class="input w-full"
+                                            placeholder="Nama lengkap ketua panitia">
+                                        @error('ketua_panitia')
+                                            <span class="text-red-500 text-sm">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-1">NIP Ketua Panitia</label>
+                                        <input type="text" wire:model="nip_ketua_panitia" class="input w-full"
+                                            placeholder="NIP ketua panitia">
+                                        @error('nip_ketua_panitia')
+                                            <span class="text-red-500 text-sm">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
                             <div
                                 class="border-t border-gray-200 bg-gray-50 px-6 py-4 flex justify-end gap-3 rounded-b-2xl">

@@ -437,7 +437,8 @@
         <!-- Tanda Tangan -->
         <div class="signature-section">
             <div class="signature-box">
-                <div class="signature-title">Mengetahui,<br>Ketua Panitia</div>
+                <div class="signature-title">Mengetahui,<br>Kepala
+                    {{ $schoolSettings['nama_sekolah'] ?? 'Sekolah' }}</div>
                 <div class="signature-name">
                     {{ $lpj->nama_kepala_sekolah ?? ($schoolSettings['kepala_sekolah'] ?? '.............................') }}
                 </div>

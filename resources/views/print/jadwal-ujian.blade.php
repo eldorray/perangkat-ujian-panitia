@@ -284,10 +284,10 @@
                 <div class="signature-date">{{ $schoolSettings['kabupaten'] ?? 'Kota' }},
                     {{ now()->translatedFormat('d F Y') }}</div>
                 <div class="signature-title">Ketua Panitia,</div>
-                <div class="signature-name">{{ $schoolSettings['kepala_sekolah'] ?? '.............................' }}
+                <div class="signature-name">{{ $kegiatanUjian->ketua_panitia ?? '.............................' }}
                 </div>
-                @if (!empty($schoolSettings['nip_kepala_sekolah']))
-                    <div class="signature-nip">NIP. {{ $schoolSettings['nip_kepala_sekolah'] }}</div>
+                @if (!empty($kegiatanUjian->nip_ketua_panitia))
+                    <div class="signature-nip">NIP. {{ $kegiatanUjian->nip_ketua_panitia }}</div>
                 @endif
             </div>
         </div>

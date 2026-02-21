@@ -466,7 +466,10 @@
                                 {{ now()->translatedFormat('d F Y') }}</div>
                             <div class="signature-title">Ketua Panitia,</div>
                             <div class="signature-name">
-                                {{ $schoolSettings['kepala_sekolah'] ?? '.............................' }}</div>
+                                {{ $kegiatanUjian->ketua_panitia ?? '.............................' }}</div>
+                            @if (!empty($kegiatanUjian->nip_ketua_panitia))
+                                <div style="font-size: 5px;">NIP. {{ $kegiatanUjian->nip_ketua_panitia }}</div>
+                            @endif
                         </div>
                     </div>
                 </div>

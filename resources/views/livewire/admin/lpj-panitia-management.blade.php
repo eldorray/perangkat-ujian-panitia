@@ -297,17 +297,17 @@
                                         </div>
                                     </div>
                                     <div class="space-y-3">
-                                        <h5 class="text-sm font-medium text-gray-600">Mengetahui, Ketua Panitia
+                                        <h5 class="text-sm font-medium text-gray-600">Mengetahui, Kepala Sekolah
                                         </h5>
                                         <div>
                                             <label class="block text-xs text-gray-500 mb-1">Nama</label>
                                             <input type="text" wire:model="nama_kepala_sekolah"
-                                                class="input w-full" placeholder="Nama Ketua Panitia">
+                                                class="input w-full" placeholder="Nama Kepala Sekolah">
                                         </div>
                                         <div>
                                             <label class="block text-xs text-gray-500 mb-1">NIP</label>
                                             <input type="text" wire:model="nip_kepala_sekolah"
-                                                class="input w-full" placeholder="NIP Ketua Panitia">
+                                                class="input w-full" placeholder="NIP Kepala Sekolah">
                                         </div>
                                     </div>
                                 </div>

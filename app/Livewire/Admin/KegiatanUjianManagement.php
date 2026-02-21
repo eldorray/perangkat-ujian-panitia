@@ -27,6 +27,8 @@ class KegiatanUjianManagement extends Component
     public ?int $tahun_ajaran_id = null;
     public string $sk_number = '';
     public string $keterangan = '';
+    public string $ketua_panitia = '';
+    public string $nip_ketua_panitia = '';
 
     // Lock/Unlock properties
     public bool $showLockModal = false;
@@ -44,6 +46,8 @@ class KegiatanUjianManagement extends Component
             'tahun_ajaran_id' => 'required|exists:tahun_ajarans,id',
             'sk_number' => 'nullable|string|max:100',
             'keterangan' => 'nullable|string|max:500',
+            'ketua_panitia' => 'nullable|string|max:255',
+            'nip_ketua_panitia' => 'nullable|string|max:50',
         ];
     }
 
@@ -65,7 +69,7 @@ class KegiatanUjianManagement extends Component
 
     public function create(): void
     {
-        $this->reset(['nama_ujian', 'tahun_ajaran_id', 'sk_number', 'keterangan', 'editingId']);
+        $this->reset(['nama_ujian', 'tahun_ajaran_id', 'sk_number', 'keterangan', 'ketua_panitia', 'nip_ketua_panitia', 'editingId']);
         $this->showModal = true;
     }
 
@@ -84,6 +88,8 @@ class KegiatanUjianManagement extends Component
         $this->tahun_ajaran_id = $kegiatan->tahun_ajaran_id;
         $this->sk_number = $kegiatan->sk_number ?? '';
         $this->keterangan = $kegiatan->keterangan ?? '';
+        $this->ketua_panitia = $kegiatan->ketua_panitia ?? '';
+        $this->nip_ketua_panitia = $kegiatan->nip_ketua_panitia ?? '';
         $this->showModal = true;
     }
 
@@ -96,6 +102,8 @@ class KegiatanUjianManagement extends Component
             'tahun_ajaran_id' => $this->tahun_ajaran_id,
             'sk_number' => $this->sk_number ?: null,
             'keterangan' => $this->keterangan ?: null,
+            'ketua_panitia' => $this->ketua_panitia ?: null,
+            'nip_ketua_panitia' => $this->nip_ketua_panitia ?: null,
         ];
 
         if ($this->editingId) {
@@ -205,7 +213,7 @@ class KegiatanUjianManagement extends Component
     {
         $this->showModal = false;
         $this->showDeleteModal = false;
-        $this->reset(['nama_ujian', 'tahun_ajaran_id', 'sk_number', 'keterangan', 'editingId', 'deletingId']);
+        $this->reset(['nama_ujian', 'tahun_ajaran_id', 'sk_number', 'keterangan', 'ketua_panitia', 'nip_ketua_panitia', 'editingId', 'deletingId']);
         $this->resetValidation();
     }
 

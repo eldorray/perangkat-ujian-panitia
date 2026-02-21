@@ -16,6 +16,8 @@ class KegiatanUjian extends Model
         'tahun_ajaran_id',
         'sk_number',
         'keterangan',
+        'ketua_panitia',
+        'nip_ketua_panitia',
         'is_locked',
         'lock_pin',
         'locked_at',

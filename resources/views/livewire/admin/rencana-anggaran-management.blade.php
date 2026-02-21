@@ -264,7 +264,7 @@
                         <p class="mb-4">Mengetahui,</p>
                         <p class="underline font-bold mt-12">
                             {{ $nama_kepala_sekolah ?: '................................' }}</p>
-                        <p>Kepala Sekolah</p>
+                        <p>Ketua Panitia</p>
                     </div>
                 </div>
             </div>
@@ -370,11 +370,11 @@
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kepala Sekolah</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nama Ketua Panitia</label>
                             <input type="text" wire:model="nama_kepala_sekolah" class="input w-full">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">NIP Kepala Sekolah</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">NIP Ketua Panitia</label>
                             <input type="text" wire:model="nip_kepala_sekolah" class="input w-full">
                         </div>
                     </div>

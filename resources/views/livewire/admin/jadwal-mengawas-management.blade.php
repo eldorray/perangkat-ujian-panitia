@@ -29,7 +29,7 @@
             {{ $kegiatanUjian->tahunAjaran->semester }}</p>
     </div>
 
-    {{-- Shared PHP helpers for both edit & print --}}
+    {{-- Shared helpers --}}
     @php
         $hariIndonesia = [
             'Sunday' => 'Minggu',
@@ -86,7 +86,7 @@
                                 <p class="font-medium text-gray-900">
                                     @if ($isSelected)
                                         <span
-                                            class="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs mr-2"
+                                            class="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs mr-2 font-bold"
                                             style="background-color: {{ $codeToColor[(string) $codeIndex] ?? '#3B82F6' }}">{{ $pengawasData[$codeIndex - 1]['initial'] ?? $codeIndex }}</span>
                                     @endif
                                     {{ $guru->full_name_with_titles }}
@@ -107,7 +107,7 @@
                 @endif
             </div>
 
-            <!-- Penugasan per Jadwal & Ruang -->
+            <!-- Penugasan per Jadwal & Kelas -->
             <div class="card lg:col-span-2">
                 <div class="p-4 border-b border-gray-200 flex items-center justify-between">
                     <div>
@@ -137,53 +137,40 @@
 
                 @if ($jadwalList->isEmpty())
                     <div class="p-8 text-center text-gray-500">
-                        <svg class="mx-auto h-12 w-12 text-gray-300 mb-4" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                            </path>
-                        </svg>
                         <p>Belum ada jadwal ujian. Silakan buat jadwal terlebih dahulu.</p>
                     </div>
                 @elseif ($ruangList->isEmpty())
                     <div class="p-8 text-center text-gray-500">
-                        <svg class="mx-auto h-12 w-12 text-gray-300 mb-4" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                            </path>
-                        </svg>
                         <p>Belum ada ruang ujian. Silakan buat ruang ujian terlebih dahulu.</p>
                     </div>
                 @else
-                    {{-- === EDIT TABLE (same layout as print, but with dropdowns) === --}}
-                    <div class="overflow-x-auto">
+                    {{-- === EDIT TABLE - matchign exact image layout === --}}
+                    <div class="overflow-x-auto p-2">
                         @php $editPrevDate = null; @endphp
-                        <table class="w-full text-xs border-collapse">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-2 py-2 border-b border-r border-gray-200 text-center font-medium text-gray-700"
-                                        rowspan="2">HARI/<br>TANGGAL</th>
+                        <table class="w-full border-collapse border border-black" style="font-size: 8pt;">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="border border-black px-1 py-1 text-center" rowspan="2">
+                                        HARI/<br>TANGGAL</th>
                                     @foreach ($printGroups as $pgIdx => $pg)
-                                        <th class="px-1 py-2 border-b border-r border-gray-200 text-center font-medium text-gray-700"
-                                            rowspan="2">JAM<br>KE</th>
-                                        @if ($pgIdx === 0)
-                                            <th class="px-1 py-2 border-b border-r border-gray-200 text-center font-medium text-gray-700"
-                                                rowspan="2">WAKTU</th>
-                                        @endif
-                                        <th class="px-1 py-2 border-b border-r border-gray-200 text-center font-medium text-gray-700"
-                                            rowspan="2">MATA PELAJARAN<br><span
-                                                class="text-[9px] text-gray-500 font-normal">{{ strtoupper($pg['label']) }}</span>
+                                        <th class="border border-black px-1 py-1 text-center" rowspan="2">JAM<br>KE
                                         </th>
-                                        <th class="px-1 py-1 border-b border-gray-200 text-center font-medium text-gray-700"
+                                        @if ($pgIdx === 0)
+                                            <th class="border border-black px-1 py-1 text-center" rowspan="2">WAKTU
+                                            </th>
+                                        @endif
+                                        <th class="border border-black px-1 py-1 text-center" rowspan="2">
+                                            MATA<br>PELAJARAN<br><span
+                                                style="font-size:6pt;">{{ strtoupper($pg['label']) }}</span></th>
+                                        <th class="border border-black px-1 py-1 text-center"
                                             colspan="{{ count($pg['kelasList']) }}">KELAS</th>
                                     @endforeach
                                 </tr>
-                                <tr class="bg-gray-50">
+                                <tr class="bg-gray-100">
                                     @foreach ($printGroups as $pg)
                                         @foreach ($pg['kelasList'] as $kls)
-                                            <th class="px-1 py-1 border-b border-gray-200 text-center text-[10px] font-medium text-gray-600"
-                                                style="min-width:48px;">{{ $kls['short'] }}</th>
+                                            <th class="border border-black px-1 py-1 text-center"
+                                                style="min-width:40px;">{{ $kls['short'] }}</th>
                                         @endforeach
                                     @endforeach
                                 </tr>
@@ -196,14 +183,13 @@
                                         $dateRowspan = $tsDateCounts[$dateKey] ?? 1;
                                         $editPrevDate = $dateKey;
                                     @endphp
-                                    <tr
-                                        class="{{ $tsIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50/30' }} hover:bg-blue-50/30">
+                                    <tr>
                                         @if ($isNewDate)
-                                            <td class="px-2 py-2 border-b border-r border-gray-200 text-center font-medium"
+                                            <td class="border border-black px-1 py-1 text-center font-bold"
                                                 rowspan="{{ $dateRowspan }}" style="white-space:nowrap;">
                                                 {{ $hariIndonesia[$ts['tanggal']->format('l')] }},<br>
                                                 <span
-                                                    class="text-gray-500 text-[10px]">{{ $ts['tanggal']->format('d/m/Y') }}</span>
+                                                    style="font-size:7pt;">{{ $ts['tanggal']->format('d/m/Y') }}</span>
                                             </td>
                                         @endif
                                         @foreach ($printGroups as $pgIdx => $pg)
@@ -212,18 +198,16 @@
                                                     return in_array($j->kelompok_kelas, $pg['kelompok_values']);
                                                 });
                                             @endphp
-                                            <td
-                                                class="px-1 py-1 border-b border-r border-gray-200 text-center font-bold text-gray-700">
+                                            <td class="border border-black px-1 py-1 text-center font-bold">
                                                 {{ $romanNumerals[$ts['sort_order']] ?? $ts['sort_order'] }}</td>
                                             @if ($pgIdx === 0)
-                                                <td class="px-1 py-1 border-b border-r border-gray-200 text-center text-[10px]"
+                                                <td class="border border-black px-1 py-1 text-center"
                                                     style="white-space:nowrap;">{{ $ts['waktu'] }}</td>
                                             @endif
-                                            <td
-                                                class="px-1 py-1 border-b border-r border-gray-200 text-center text-[10px]">
+                                            <td class="border border-black px-1 py-1 text-center">
                                                 {{ $groupJadwal?->mata_pelajaran ?? '-' }}</td>
                                             @foreach ($pg['kelasList'] as $kls)
-                                                <td class="px-0 py-0 border-b border-gray-200">
+                                                <td class="border border-black px-0 py-0 text-center">
                                                     @if ($groupJadwal && $kls['ruang_id'])
                                                         @php
                                                             $currentValue = $this->getAssignmentValue(
@@ -237,11 +221,11 @@
                                                             $bgColor =
                                                                 $currentValue && isset($codeToColor[$currentValue])
                                                                     ? $codeToColor[$currentValue]
-                                                                    : 'transparent';
+                                                                    : '#fff';
                                                         @endphp
                                                         <select
-                                                            class="w-full text-center text-xs px-0 py-1 border-0 focus:ring-1 focus:ring-blue-500 font-bold cursor-pointer"
-                                                            style="min-width:48px; background-color:{{ $bgColor }};"
+                                                            class="w-full text-center font-bold border-0 focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                                                            style="font-size:8pt; padding:2px 0; min-width:40px; background-color:{{ $bgColor }};"
                                                             wire:change="updateAssignment({{ $groupJadwal->id }}, {{ $kls['ruang_id'] }}, $event.target.value)">
                                                             <option value="">-</option>
                                                             @foreach ($pengawasData as $data)
@@ -263,7 +247,7 @@
                                                             @endforeach
                                                         </select>
                                                     @else
-                                                        <div class="text-center text-gray-300 py-1">-</div>
+                                                        <span style="color:#ccc;">-</span>
                                                     @endif
                                                 </td>
                                             @endforeach
@@ -295,27 +279,22 @@
             <div class="card mt-6">
                 <div class="p-4 border-b border-gray-200">
                     <h3 class="text-lg font-semibold text-gray-900">Kode dan Nama Pengawas</h3>
-                    <p class="text-sm text-gray-500 mt-1">Kode pengawas tetap konsisten di semua hari ujian</p>
                 </div>
                 <div class="p-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-sm">
                         @foreach ($pengawasData as $data)
                             @php $beban = $pengawasStats[(string) $data['code']] ?? 0; @endphp
-                            <div class="flex items-center gap-3 p-3 rounded-lg border border-gray-100"
-                                style="background-color: {{ $data['color'] }}40;">
+                            <div class="flex items-center gap-3 p-2 rounded-lg border border-gray-200">
                                 <span
-                                    class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white text-sm font-bold flex-shrink-0"
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded text-white text-sm font-bold flex-shrink-0"
                                     style="background-color: {{ $data['color'] }}">{{ $data['initial'] }}</span>
                                 <div class="flex-1 min-w-0">
-                                    <p class="font-medium text-gray-900 truncate">
+                                    <p class="font-medium text-gray-900 truncate text-xs">
                                         {{ $data['guru']->full_name_with_titles }}</p>
-                                    <p class="text-xs text-gray-500">{{ $data['guru']->nip ?: '-' }}</p>
                                 </div>
                                 @if ($beban > 0)
                                     <span
-                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $beban >= count($printTimeSlots) ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800' }}">
-                                        {{ $beban }}x
-                                    </span>
+                                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700">{{ $beban }}x</span>
                                 @endif
                             </div>
                         @endforeach
@@ -363,8 +342,8 @@
                         <div class="text-base font-bold">
                             {{ strtoupper($schoolSettings['nama_sekolah'] ?? 'NAMA SEKOLAH') }}</div>
                         <div class="text-xs">Alamat: {{ $schoolSettings['alamat'] ?? '' }}
-                            {{ $schoolSettings['kelurahan'] ?? '' }} {{ $schoolSettings['kecamatan'] ?? '' }}
-                            Telp. {{ $schoolSettings['telepon'] ?? '' }}</div>
+                            {{ $schoolSettings['kelurahan'] ?? '' }} {{ $schoolSettings['kecamatan'] ?? '' }} Telp.
+                            {{ $schoolSettings['telepon'] ?? '' }}</div>
                         <div class="text-xs">{{ strtoupper($schoolSettings['kabupaten'] ?? '') }}
                             {{ $schoolSettings['kode_pos'] ?? '' }}</div>
                     </div>
@@ -377,7 +356,7 @@
                     <p class="text-xs">{{ strtoupper($schoolSettings['nama_sekolah'] ?? '') }}</p>
                 </div>
 
-                {{-- === PRINT TABLE (same layout as edit, but with colored initials + legend) === --}}
+                {{-- === PRINT TABLE - identical layout to edit but with colored initials + legend === --}}
                 <div class="overflow-x-auto mb-4">
                     @php
                         $printPrevDate = null;
@@ -476,13 +455,12 @@
                             {{-- Extra legend rows if more pengawas than time slots --}}
                             @for ($ei = $totalRows; $ei < $legendCount; $ei++)
                                 @php
-                                    // Calculate colspan: HARI/TGL + per group(JAM KE + MAPEL + kelas cols) + first group WAKTU
-                                    $colspan = 1; // HARI/TGL
+                                    $colspan = 1;
                                     foreach ($printGroups as $pgIdx2 => $pg2) {
-                                        $colspan += 2 + count($pg2['kelasList']); // JAM KE + MAPEL + kelas
+                                        $colspan += 2 + count($pg2['kelasList']);
                                         if ($pgIdx2 === 0) {
                                             $colspan += 1;
-                                        } // WAKTU (first group only)
+                                        }
                                     }
                                 @endphp
                                 <tr>

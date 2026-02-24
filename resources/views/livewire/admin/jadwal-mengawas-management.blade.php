@@ -29,17 +29,7 @@
             {{ $kegiatanUjian->tahunAjaran->semester }}</p>
     </div>
 
-    {{-- Shared helpers --}}
     @php
-        $hariIndonesia = [
-            'Sunday' => 'Minggu',
-            'Monday' => 'Senin',
-            'Tuesday' => 'Selasa',
-            'Wednesday' => 'Rabu',
-            'Thursday' => 'Kamis',
-            'Friday' => 'Jumat',
-            'Saturday' => 'Sabtu',
-        ];
         $hariPrint = [
             'Sunday' => 'MINGGU',
             'Monday' => 'SENIN',
@@ -61,7 +51,6 @@
                     <h3 class="text-lg font-semibold text-gray-900">Pilih Pengawas</h3>
                     <p class="text-sm text-gray-500 mt-1">Pilih guru yang akan ditugaskan sebagai pengawas</p>
                 </div>
-
                 <div class="p-4 border-b border-gray-200">
                     <input type="text" wire:model.live.debounce.300ms="search" class="form-input w-full"
                         placeholder="Cari nama atau NIP...">
@@ -71,7 +60,6 @@
                         <button wire:click="clearPengawas" class="btn btn-secondary btn-sm flex-1">Hapus Semua</button>
                     </div>
                 </div>
-
                 <div class="p-4 max-h-[400px] overflow-y-auto">
                     @forelse ($guruList as $guru)
                         @php
@@ -84,10 +72,10 @@
                                 @checked($isSelected) class="form-checkbox h-5 w-5 text-blue-600 rounded">
                             <div class="flex-1">
                                 <p class="font-medium text-gray-900">
-                                    @if ($isSelected)
+                                    @if ($isSelected && $codeIndex && isset($pengawasData[$codeIndex - 1]))
                                         <span
-                                            class="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-xs mr-2 font-bold"
-                                            style="background-color: {{ $codeToColor[(string) $codeIndex] ?? '#3B82F6' }}">{{ $pengawasData[$codeIndex - 1]['initial'] ?? $codeIndex }}</span>
+                                            class="inline-flex items-center justify-center w-7 h-7 rounded text-white text-xs mr-2 font-bold"
+                                            style="background-color: {{ $pengawasData[$codeIndex - 1]['color'] ?? '#3B82F6' }}">{{ $pengawasData[$codeIndex - 1]['initial'] ?? $codeIndex }}</span>
                                     @endif
                                     {{ $guru->full_name_with_titles }}
                                 </p>
@@ -98,7 +86,6 @@
                         <p class="text-center text-gray-500 py-8">Tidak ada guru ditemukan</p>
                     @endforelse
                 </div>
-
                 @if (count($selectedPengawas) > 0)
                     <div class="p-4 border-t border-gray-200 bg-gray-50">
                         <p class="text-sm font-medium text-gray-700">{{ count($selectedPengawas) }} pengawas dipilih
@@ -107,13 +94,13 @@
                 @endif
             </div>
 
-            <!-- Penugasan per Jadwal & Kelas -->
+            <!-- Penugasan Pengawas -->
             <div class="card lg:col-span-2">
                 <div class="p-4 border-b border-gray-200 flex items-center justify-between">
                     <div>
                         <h3 class="text-lg font-semibold text-gray-900">Penugasan Pengawas</h3>
-                        <p class="text-sm text-gray-500 mt-1">Pilih inisial pengawas per kelas (1 pengawas per kelas,
-                            tidak boleh bentrok)</p>
+                        <p class="text-sm text-gray-500 mt-1">Klik sel kelas untuk mengganti pengawas (toggle). Klik
+                            lagi untuk pengawas berikutnya.</p>
                     </div>
                     <div class="flex gap-2">
                         <button wire:click="autoAssign" class="btn btn-secondary btn-sm" @disabled(count($selectedPengawas) == 0)>
@@ -144,7 +131,7 @@
                         <p>Belum ada ruang ujian. Silakan buat ruang ujian terlebih dahulu.</p>
                     </div>
                 @else
-                    {{-- === EDIT TABLE - matchign exact image layout === --}}
+                    {{-- EDIT TABLE - Clickable toggle cells matching image layout --}}
                     <div class="overflow-x-auto p-2">
                         @php $editPrevDate = null; @endphp
                         <table class="w-full border-collapse border border-black" style="font-size: 8pt;">
@@ -170,7 +157,7 @@
                                     @foreach ($printGroups as $pg)
                                         @foreach ($pg['kelasList'] as $kls)
                                             <th class="border border-black px-1 py-1 text-center"
-                                                style="min-width:40px;">{{ $kls['short'] }}</th>
+                                                style="min-width:30px;">{{ $kls['short'] }}</th>
                                         @endforeach
                                     @endforeach
                                 </tr>
@@ -187,7 +174,7 @@
                                         @if ($isNewDate)
                                             <td class="border border-black px-1 py-1 text-center font-bold"
                                                 rowspan="{{ $dateRowspan }}" style="white-space:nowrap;">
-                                                {{ $hariIndonesia[$ts['tanggal']->format('l')] }},<br>
+                                                {{ $hariPrint[$ts['tanggal']->format('l')] }},<br>
                                                 <span
                                                     style="font-size:7pt;">{{ $ts['tanggal']->format('d/m/Y') }}</span>
                                             </td>
@@ -207,49 +194,26 @@
                                             <td class="border border-black px-1 py-1 text-center">
                                                 {{ $groupJadwal?->mata_pelajaran ?? '-' }}</td>
                                             @foreach ($pg['kelasList'] as $kls)
-                                                <td class="border border-black px-0 py-0 text-center">
-                                                    @if ($groupJadwal && $kls['ruang_id'])
-                                                        @php
-                                                            $currentValue = $this->getAssignmentValue(
-                                                                $groupJadwal->id,
-                                                                $kls['ruang_id'],
-                                                            );
-                                                            $availableCodes = $this->getAvailablePengawas(
-                                                                $groupJadwal->id,
-                                                                $kls['ruang_id'],
-                                                            );
-                                                            $bgColor =
-                                                                $currentValue && isset($codeToColor[$currentValue])
-                                                                    ? $codeToColor[$currentValue]
-                                                                    : '#fff';
-                                                        @endphp
-                                                        <select
-                                                            class="w-full text-center font-bold border-0 focus:ring-1 focus:ring-blue-500 cursor-pointer"
-                                                            style="font-size:8pt; padding:2px 0; min-width:40px; background-color:{{ $bgColor }};"
-                                                            wire:change="updateAssignment({{ $groupJadwal->id }}, {{ $kls['ruang_id'] }}, $event.target.value)">
-                                                            <option value="">-</option>
-                                                            @foreach ($pengawasData as $data)
-                                                                @php
-                                                                    $isCurrentlySelected =
-                                                                        $currentValue === (string) $data['code'];
-                                                                    $isAvailable = in_array(
-                                                                        (string) $data['code'],
-                                                                        $availableCodes,
-                                                                    );
-                                                                    $isDisabled =
-                                                                        !$isCurrentlySelected && !$isAvailable;
-                                                                @endphp
-                                                                <option value="{{ $data['code'] }}"
-                                                                    @selected($isCurrentlySelected)
-                                                                    @disabled($isDisabled)>
-                                                                    {{ $data['initial'] }}{{ $isDisabled ? ' ✗' : '' }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                    @else
-                                                        <span style="color:#ccc;">-</span>
-                                                    @endif
-                                                </td>
+                                                @if ($groupJadwal && $kls['ruang_id'])
+                                                    @php
+                                                        $code = $this->getAssignmentValue(
+                                                            $groupJadwal->id,
+                                                            $kls['ruang_id'],
+                                                        );
+                                                        $initial = $code ? $codeToInitial[$code] ?? $code : '';
+                                                        $color = $code ? $codeToColor[$code] ?? '#eee' : '#fff';
+                                                    @endphp
+                                                    <td class="border border-black px-1 py-1 text-center font-bold cursor-pointer select-none hover:opacity-80 transition-opacity"
+                                                        style="background-color:{{ $color }}; min-width:30px;"
+                                                        wire:click="cycleAssignment({{ $groupJadwal->id }}, {{ $kls['ruang_id'] }})"
+                                                        title="Klik untuk ganti pengawas">
+                                                        {{ $initial ?: '' }}
+                                                    </td>
+                                                @else
+                                                    <td
+                                                        class="border border-black px-1 py-1 text-center text-gray-300">
+                                                        -</td>
+                                                @endif
                                             @endforeach
                                         @endforeach
                                     </tr>
@@ -356,7 +320,7 @@
                     <p class="text-xs">{{ strtoupper($schoolSettings['nama_sekolah'] ?? '') }}</p>
                 </div>
 
-                {{-- === PRINT TABLE - identical layout to edit but with colored initials + legend === --}}
+                {{-- PRINT TABLE - same layout, colored initials + KODE/NAMA GURU legend --}}
                 <div class="overflow-x-auto mb-4">
                     @php
                         $printPrevDate = null;
@@ -452,7 +416,6 @@
                                     @endif
                                 </tr>
                             @endforeach
-                            {{-- Extra legend rows if more pengawas than time slots --}}
                             @for ($ei = $totalRows; $ei < $legendCount; $ei++)
                                 @php
                                     $colspan = 1;
@@ -494,7 +457,6 @@
         </div>
     @endif
 
-    <!-- Print Styles -->
     <style>
         @media print {
             * {
@@ -532,7 +494,6 @@
             }
         }
     </style>
-
     <script>
         function printJadwal() {
             window.print();

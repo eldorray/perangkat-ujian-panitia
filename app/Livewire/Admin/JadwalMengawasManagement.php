@@ -185,6 +185,38 @@ class JadwalMengawasManagement extends Component
         return '';
     }
 
+    public function cycleAssignment(int $jadwalId, int $ruangId): void
+    {
+        $currentValue = $this->getAssignmentValue($jadwalId, $ruangId);
+        $availableCodes = $this->getAvailablePengawas($jadwalId, $ruangId);
+
+        // Add current value back to available list (so we can cycle past it)
+        if ($currentValue !== '' && !in_array($currentValue, $availableCodes)) {
+            $availableCodes[] = $currentValue;
+            sort($availableCodes, SORT_NUMERIC);
+        }
+
+        if (empty($availableCodes)) {
+            return;
+        }
+
+        if ($currentValue === '') {
+            // Nothing assigned yet -> assign first available
+            $newValue = $availableCodes[0];
+        } else {
+            // Find next in cycle
+            $currentIndex = array_search($currentValue, $availableCodes);
+            if ($currentIndex === false || $currentIndex >= count($availableCodes) - 1) {
+                // Last in list or not found -> clear
+                $newValue = '';
+            } else {
+                $newValue = $availableCodes[$currentIndex + 1];
+            }
+        }
+
+        $this->updateAssignment($jadwalId, $ruangId, $newValue);
+    }
+
     public function togglePreview(): void
     {
         $this->showPreview = !$this->showPreview;

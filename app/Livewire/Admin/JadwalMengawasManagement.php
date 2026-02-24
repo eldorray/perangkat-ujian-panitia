@@ -187,26 +187,28 @@ class JadwalMengawasManagement extends Component
         $ruangList = RuangUjian::orderBy('kode')->get();
 
         $pengawasCount = count($this->selectedPengawas);
+        $ruangIds = $ruangList->pluck('id')->toArray();
+        $ruangCount = count($ruangIds);
 
         $this->assignments = [];
 
-        foreach ($jadwalList as $jadwal) {
+        // Acak kode SEKALI saja — kode guru tetap konsisten di semua hari
+        $codes = range(1, $pengawasCount);
+        shuffle($codes);
+
+        foreach ($jadwalList as $jadwalIndex => $jadwal) {
             $this->assignments[$jadwal->id] = [];
 
-            // Shuffle pengawas codes for random assignment per jadwal
-            $codes = range(1, $pengawasCount);
-            shuffle($codes);
+            // Rotasi offset berdasarkan index jadwal
+            // Sehingga guru tidak selalu mengawas di ruang yang sama
+            $offset = $jadwalIndex % $pengawasCount;
 
-            $codeIndex = 0;
-
-            foreach ($ruangList as $ruang) {
-                // Assign 1 pengawas per room
-                if ($codeIndex < $pengawasCount) {
-                    $this->assignments[$jadwal->id][$ruang->id] = (string)$codes[$codeIndex];
-                    $codeIndex++;
+            foreach ($ruangIds as $ruangIndex => $ruangId) {
+                if ($ruangIndex < $pengawasCount) {
+                    $codeIdx = ($ruangIndex + $offset) % $pengawasCount;
+                    $this->assignments[$jadwal->id][$ruangId] = (string)$codes[$codeIdx];
                 } else {
-                    // If more rooms than pengawas, leave empty or cycle
-                    $this->assignments[$jadwal->id][$ruang->id] = '';
+                    $this->assignments[$jadwal->id][$ruangId] = '';
                 }
             }
         }
@@ -221,6 +223,30 @@ class JadwalMengawasManagement extends Component
         $this->assignments = [];
         session(["jadwal_mengawas_assignments_{$this->kegiatanUjian->id}" => $this->assignments]);
         $this->dispatch('toast', type: 'success', message: 'Semua penugasan berhasil dihapus!');
+    }
+
+    /**
+     * Hitung statistik beban mengawas per kode pengawas
+     */
+    public function getPengawasStats(): array
+    {
+        $stats = [];
+        if (empty($this->selectedPengawas)) {
+            return $stats;
+        }
+
+        $pengawasCount = count($this->selectedPengawas);
+        for ($code = 1; $code <= $pengawasCount; $code++) {
+            $count = 0;
+            foreach ($this->assignments as $jadwalAssignments) {
+                if (in_array((string)$code, array_values(is_array($jadwalAssignments) ? $jadwalAssignments : []), true)) {
+                    $count++;
+                }
+            }
+            $stats[(string)$code] = $count;
+        }
+
+        return $stats;
     }
 
     public function render(): View
@@ -262,12 +288,16 @@ class JadwalMengawasManagement extends Component
 
         $schoolSettings = SchoolSetting::getAllSettings();
 
+        // Statistik beban mengawas
+        $pengawasStats = $this->getPengawasStats();
+
         return view('livewire.admin.jadwal-mengawas-management', compact(
             'guruList',
             'pengawasData',
             'jadwalList',
             'ruangList',
-            'schoolSettings'
+            'schoolSettings',
+            'pengawasStats'
         ));
     }
 }

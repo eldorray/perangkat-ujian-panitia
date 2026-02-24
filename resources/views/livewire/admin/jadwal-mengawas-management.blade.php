@@ -165,9 +165,28 @@
                                         'Friday' => 'Jumat',
                                         'Saturday' => 'Sabtu',
                                     ];
+                                    $prevDate = null;
+                                    $dateColorIndex = 0;
+                                    $dateColors = [
+                                        'bg-white',
+                                        'bg-blue-50/50',
+                                        'bg-amber-50/50',
+                                        'bg-green-50/50',
+                                        'bg-purple-50/30',
+                                    ];
                                 @endphp
                                 @foreach ($jadwalList as $index => $jadwal)
-                                    <tr class="hover:bg-gray-50">
+                                    @php
+                                        $currentDate = $jadwal->tanggal->format('Y-m-d');
+                                        if ($prevDate !== $currentDate) {
+                                            if ($prevDate !== null) {
+                                                $dateColorIndex++;
+                                            }
+                                            $prevDate = $currentDate;
+                                        }
+                                        $rowColor = $dateColors[$dateColorIndex % count($dateColors)];
+                                    @endphp
+                                    <tr class="hover:bg-gray-100/50 {{ $rowColor }}">
                                         <td class="px-3 py-2 border-b text-center">{{ $index + 1 }}</td>
                                         <td class="px-3 py-2 border-b whitespace-nowrap">
                                             {{ $hariIndonesia[$jadwal->tanggal->format('l')] }}<br>
@@ -249,14 +268,28 @@
             <div class="card mt-6">
                 <div class="p-4 border-b border-gray-200">
                     <h3 class="text-lg font-semibold text-gray-900">Kode dan Nama Pengawas</h3>
+                    <p class="text-sm text-gray-500 mt-1">Kode pengawas tetap konsisten di semua hari ujian</p>
                 </div>
                 <div class="p-4">
-                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 text-sm">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-sm">
                         @foreach ($pengawasData as $data)
-                            <div class="flex items-center gap-2 p-2 rounded bg-gray-50">
+                            @php
+                                $beban = $pengawasStats[(string) $data['code']] ?? 0;
+                            @endphp
+                            <div class="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border border-gray-100">
                                 <span
-                                    class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold">{{ $data['code'] }}</span>
-                                <span class="truncate">{{ $data['guru']->full_name_with_titles }}</span>
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-sm font-bold flex-shrink-0">{{ $data['code'] }}</span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="font-medium text-gray-900 truncate">
+                                        {{ $data['guru']->full_name_with_titles }}</p>
+                                    <p class="text-xs text-gray-500">{{ $data['guru']->nip ?: '-' }}</p>
+                                </div>
+                                @if ($beban > 0)
+                                    <span
+                                        class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $beban >= count($jadwalList) ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800' }}">
+                                        {{ $beban }}x
+                                    </span>
+                                @endif
                             </div>
                         @endforeach
                     </div>
@@ -382,7 +415,7 @@
                         <div class="grid grid-cols-3 gap-x-4 gap-y-1 text-xs">
                             @foreach ($pengawasData as $data)
                                 <div class="flex items-start gap-1">
-                                    <span class="font-bold w-6 flex-shrink-0">{{ $data['code'] }}</span>
+                                    <span class="font-bold w-6 flex-shrink-0">{{ $data['code'] }}.</span>
                                     <span>{{ $data['guru']->full_name_with_titles }}</span>
                                 </div>
                             @endforeach
@@ -393,12 +426,15 @@
                 <!-- Footer -->
                 <div class="mt-8 flex justify-end">
                     <div class="text-center">
-                        <p class="text-sm">{{ $schoolSettings['kabupaten'] ?? '' }}, .........................
+                        <p class="text-sm">{{ $schoolSettings['kabupaten'] ?? '' }},
+                            {{ $kegiatanUjian->tanggal_dokumen ? $kegiatanUjian->tanggal_dokumen->translatedFormat('d F Y') : '.........................' }}
                         </p>
                         <p class="text-sm font-bold mt-1">Ketua Panitia</p>
                         <div class="h-20"></div>
-                        <p class="text-sm">____________________________</p>
-                        <p class="text-sm">NIP. ................................</p>
+                        <p class="text-sm font-bold">
+                            {{ $kegiatanUjian->ketua_panitia ?? '____________________________' }}</p>
+                        <p class="text-sm">NIP.
+                            {{ $kegiatanUjian->nip_ketua_panitia ?? '................................' }}</p>
                     </div>
                 </div>
             </div>

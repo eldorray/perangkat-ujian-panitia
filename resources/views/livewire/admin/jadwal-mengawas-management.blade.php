@@ -131,6 +131,23 @@
                         <p>Belum ada ruang ujian. Silakan buat ruang ujian terlebih dahulu.</p>
                     </div>
                 @else
+                    {{-- Kelompok Kelas Filter Tabs --}}
+                    @if (count($kelompokOptions) > 1)
+                        <div class="p-3 border-b border-gray-200 bg-gray-50/50">
+                            <div class="flex flex-wrap gap-2">
+                                <button wire:click="$set('filterKelompok', '')"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {{ $filterKelompok === '' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100' }}">
+                                    Semua
+                                </button>
+                                @foreach ($kelompokOptions as $kelompok)
+                                    <button wire:click="$set('filterKelompok', '{{ $kelompok }}')"
+                                        class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {{ $filterKelompok === $kelompok ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100' }}">
+                                        {{ $kelompok }}
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead class="bg-gray-50">

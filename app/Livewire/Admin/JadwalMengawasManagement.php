@@ -27,6 +27,9 @@ class JadwalMengawasManagement extends Component
     // Search
     public string $search = '';
 
+    // Filter by kelompok kelas
+    public string $filterKelompok = '';
+
     // Show print preview
     public bool $showPreview = false;
 
@@ -278,10 +281,34 @@ class JadwalMengawasManagement extends Component
         }
 
         // Get jadwal ujian
-        $jadwalList = JadwalUjian::where('kegiatan_ujian_id', $this->kegiatanUjian->id)
+        $jadwalQuery = JadwalUjian::where('kegiatan_ujian_id', $this->kegiatanUjian->id)
+            ->orderBy('kelompok_kelas')
             ->orderBy('tanggal')
-            ->orderBy('jam_mulai')
-            ->get();
+            ->orderBy('sort_order')
+            ->orderBy('jam_mulai');
+
+        // Get all jadwal for grouping options
+        $allJadwal = $jadwalQuery->get();
+
+        // Get unique kelompok_kelas options
+        $kelompokOptions = $allJadwal
+            ->pluck('kelompok_kelas')
+            ->map(fn($k) => $k ?: 'Semua Kelas')
+            ->unique()
+            ->values()
+            ->toArray();
+
+        // Filter jadwal by kelompok if selected
+        if ($this->filterKelompok !== '') {
+            $jadwalList = $allJadwal->filter(function ($j) {
+                if ($this->filterKelompok === 'Semua Kelas') {
+                    return $j->kelompok_kelas === null || $j->kelompok_kelas === '';
+                }
+                return $j->kelompok_kelas === $this->filterKelompok;
+            })->values();
+        } else {
+            $jadwalList = $allJadwal;
+        }
 
         // Get ruang ujian
         $ruangList = RuangUjian::orderBy('kode')->get();
@@ -297,7 +324,8 @@ class JadwalMengawasManagement extends Component
             'jadwalList',
             'ruangList',
             'schoolSettings',
-            'pengawasStats'
+            'pengawasStats',
+            'kelompokOptions'
         ));
     }
 }

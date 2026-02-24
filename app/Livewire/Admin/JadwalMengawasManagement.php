@@ -388,8 +388,23 @@ class JadwalMengawasManagement extends Component
             $kelasRuangMap[$p->kelas_nama] = $p->ruang_ujian_id;
         }
 
+        // Build ruang_id => kode lookup
+        $ruangIdToKode = $ruangList->pluck('kode', 'id')->toArray();
+
         $allKelas = Kelas::orderBy('tingkat')->orderBy('nama')->get();
         $kelompokValues = $allJadwal->pluck('kelompok_kelas')->filter()->unique()->sort()->values();
+
+        $buildKelasList = function($kelasList) use ($kelasRuangMap, $ruangIdToKode) {
+            return $kelasList->map(function($k) use ($kelasRuangMap, $ruangIdToKode) {
+                $ruangId = $kelasRuangMap[$k->nama] ?? null;
+                return [
+                    'nama' => $k->nama,
+                    'short' => preg_replace('/^Kelas\s+/', '', $k->nama),
+                    'ruang_id' => $ruangId,
+                    'ruang_kode' => $ruangId ? ($ruangIdToKode[$ruangId] ?? null) : null,
+                ];
+            })->toArray();
+        };
 
         if ($kelompokValues->isNotEmpty()) {
             $rawGroups = [];
@@ -397,22 +412,14 @@ class JadwalMengawasManagement extends Component
                 $kelasList = $allKelas->filter(fn($k) => $k->tingkat === $kv)->values();
                 $rawGroups[] = [
                     'kelompok_values' => [$kv],
-                    'kelasList' => $kelasList->map(fn($k) => [
-                        'nama' => $k->nama,
-                        'short' => preg_replace('/^Kelas\s+/', '', $k->nama),
-                        'ruang_id' => $kelasRuangMap[$k->nama] ?? null,
-                    ])->toArray(),
+                    'kelasList' => $buildKelasList($kelasList),
                 ];
             }
             $printGroups = $this->mergePrintGroups($rawGroups, $allJadwal);
         } else {
             $printGroups = [[
                 'label' => 'Semua Kelas',
-                'kelasList' => $allKelas->map(fn($k) => [
-                    'nama' => $k->nama,
-                    'short' => preg_replace('/^Kelas\s+/', '', $k->nama),
-                    'ruang_id' => $kelasRuangMap[$k->nama] ?? null,
-                ])->toArray(),
+                'kelasList' => $buildKelasList($allKelas),
                 'kelompok_values' => [null],
             ]];
         }

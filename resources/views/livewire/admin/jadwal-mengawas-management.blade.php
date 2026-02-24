@@ -422,7 +422,10 @@
                                 @foreach ($printGroups as $pg)
                                     @foreach ($pg['kelasList'] as $kls)
                                         <th class="border border-black px-1 py-1 text-center" style="min-width:22px;">
-                                            {{ $kls['short'] }}</th>
+                                            {{ $kls['short'] }}@if ($kls['ruang_kode'])
+                                                /{{ $kls['ruang_kode'] }}
+                                            @endif
+                                        </th>
                                     @endforeach
                                 @endforeach
                             </tr>

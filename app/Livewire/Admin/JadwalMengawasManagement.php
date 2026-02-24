@@ -5,6 +5,8 @@ namespace App\Livewire\Admin;
 use App\Models\Guru;
 use App\Models\JadwalUjian;
 use App\Models\KegiatanUjian;
+use App\Models\Kelas;
+use App\Models\PenempatanRuangUjian;
 use App\Models\RuangUjian;
 use App\Models\SchoolSetting;
 use Illuminate\View\View;
@@ -252,6 +254,66 @@ class JadwalMengawasManagement extends Component
         return $stats;
     }
 
+    private function generateUniqueInitial(array $words, array $usedInitials): string
+    {
+        $candidates = [];
+        if (isset($words[0])) $candidates[] = strtoupper(mb_substr($words[0], 0, 1));
+        if (count($words) >= 2) $candidates[] = strtoupper(mb_substr($words[0], 0, 1) . mb_substr($words[1], 0, 1));
+        if (isset($words[0]) && mb_strlen($words[0]) >= 2) $candidates[] = strtoupper(mb_substr($words[0], 0, 2));
+        if (count($words) >= 3) $candidates[] = strtoupper(mb_substr($words[0], 0, 1) . mb_substr($words[1], 0, 1) . mb_substr($words[2], 0, 1));
+
+        foreach ($candidates as $c) {
+            if (!in_array($c, $usedInitials)) return $c;
+        }
+        for ($len = 3; $len <= mb_strlen($words[0] ?? ''); $len++) {
+            $c = strtoupper(mb_substr($words[0], 0, $len));
+            if (!in_array($c, $usedInitials)) return $c;
+        }
+        return (string)(count($usedInitials) + 1);
+    }
+
+    private function mergePrintGroups(array $groups, $allJadwal): array
+    {
+        if (count($groups) <= 1) return $groups;
+        $romanToArabic = ['I'=>'1','II'=>'2','III'=>'3','IV'=>'4','V'=>'5','VI'=>'6'];
+
+        // Build jadwal pattern for each group
+        $patterns = [];
+        foreach ($groups as $i => $group) {
+            $pattern = [];
+            foreach ($allJadwal as $j) {
+                if (in_array($j->kelompok_kelas, $group['kelompok_values'])) {
+                    $key = $j->tanggal->format('Y-m-d') . '|' . $j->sort_order;
+                    $pattern[$key] = $j->mata_pelajaran;
+                }
+            }
+            ksort($pattern);
+            $patterns[$i] = serialize($pattern);
+        }
+
+        // Merge groups with same pattern
+        $merged = [];
+        $processed = [];
+        foreach ($patterns as $i => $pattern) {
+            if (in_array($i, $processed)) continue;
+            $mg = $groups[$i];
+            for ($j = $i + 1; $j < count($groups); $j++) {
+                if (in_array($j, $processed)) continue;
+                if ($patterns[$j] === $pattern) {
+                    $mg['kelasList'] = array_merge($mg['kelasList'], $groups[$j]['kelasList']);
+                    $mg['kelompok_values'] = array_merge($mg['kelompok_values'], $groups[$j]['kelompok_values']);
+                    $processed[] = $j;
+                }
+            }
+            $processed[] = $i;
+            // Build label
+            $arabicVals = collect($mg['kelompok_values'])->sort()->map(fn($t) => $romanToArabic[$t] ?? $t)->values();
+            $mg['label'] = 'Kelas ' . $arabicVals->join(', ', ' & ');
+            $merged[] = $mg;
+        }
+        return $merged;
+    }
+
     public function render(): View
     {
         $guruQuery = Guru::active()->orderBy('full_name');
@@ -314,18 +376,85 @@ class JadwalMengawasManagement extends Component
         $ruangList = RuangUjian::orderBy('kode')->get();
 
         $schoolSettings = SchoolSetting::getAllSettings();
-
-        // Statistik beban mengawas
         $pengawasStats = $this->getPengawasStats();
 
+        // === Print preview data ===
+        $kelasRuangMap = [];
+        $placements = PenempatanRuangUjian::where('kegiatan_ujian_id', $this->kegiatanUjian->id)
+            ->selectRaw('kelas_nama, ruang_ujian_id')
+            ->distinct()
+            ->get();
+        foreach ($placements as $p) {
+            $kelasRuangMap[$p->kelas_nama] = $p->ruang_ujian_id;
+        }
+
+        $allKelas = Kelas::orderBy('tingkat')->orderBy('nama')->get();
+        $kelompokValues = $allJadwal->pluck('kelompok_kelas')->filter()->unique()->sort()->values();
+
+        if ($kelompokValues->isNotEmpty()) {
+            $rawGroups = [];
+            foreach ($kelompokValues as $kv) {
+                $kelasList = $allKelas->filter(fn($k) => $k->tingkat === $kv)->values();
+                $rawGroups[] = [
+                    'kelompok_values' => [$kv],
+                    'kelasList' => $kelasList->map(fn($k) => [
+                        'nama' => $k->nama,
+                        'short' => preg_replace('/^Kelas\s+/', '', $k->nama),
+                        'ruang_id' => $kelasRuangMap[$k->nama] ?? null,
+                    ])->toArray(),
+                ];
+            }
+            $printGroups = $this->mergePrintGroups($rawGroups, $allJadwal);
+        } else {
+            $printGroups = [[
+                'label' => 'Semua Kelas',
+                'kelasList' => $allKelas->map(fn($k) => [
+                    'nama' => $k->nama,
+                    'short' => preg_replace('/^Kelas\s+/', '', $k->nama),
+                    'ruang_id' => $kelasRuangMap[$k->nama] ?? null,
+                ])->toArray(),
+                'kelompok_values' => [null],
+            ]];
+        }
+
+        // Build time slots for print
+        $printTimeSlots = [];
+        $grouped = $allJadwal->groupBy(fn($j) => $j->tanggal->format('Y-m-d') . '|' . $j->sort_order);
+        foreach ($grouped->sortKeys() as $key => $jadwals) {
+            $first = $jadwals->first();
+            $printTimeSlots[] = [
+                'tanggal' => $first->tanggal,
+                'sort_order' => $first->sort_order,
+                'waktu' => substr($first->jam_mulai, 0, 5) . ' - ' . substr($first->jam_selesai, 0, 5),
+                'jadwals' => $jadwals,
+            ];
+        }
+
+        // Generate initials & colors for pengawas
+        $colorPalette = [
+            '#FECACA','#FED7AA','#FDE68A','#D9F99D','#BBF7D0',
+            '#A7F3D0','#99F6E4','#A5F3FC','#BAE6FD','#BFDBFE',
+            '#C7D2FE','#DDD6FE','#E9D5FF','#F5D0FE','#FBCFE8',
+            '#FCA5A1','#FDBA74','#FCD34D','#BEF264','#86EFAC',
+        ];
+        $usedInitials = [];
+        $codeToInitial = [];
+        $codeToColor = [];
+        foreach ($pengawasData as $idx => &$pd) {
+            $words = preg_split('/\s+/', trim($pd['guru']->full_name));
+            $initial = $this->generateUniqueInitial($words, $usedInitials);
+            $usedInitials[] = $initial;
+            $pd['initial'] = $initial;
+            $pd['color'] = $colorPalette[$idx % count($colorPalette)];
+            $codeToInitial[(string)$pd['code']] = $initial;
+            $codeToColor[(string)$pd['code']] = $pd['color'];
+        }
+        unset($pd);
+
         return view('livewire.admin.jadwal-mengawas-management', compact(
-            'guruList',
-            'pengawasData',
-            'jadwalList',
-            'ruangList',
-            'schoolSettings',
-            'pengawasStats',
-            'kelompokOptions'
+            'guruList', 'pengawasData', 'jadwalList', 'ruangList',
+            'schoolSettings', 'pengawasStats', 'kelompokOptions',
+            'printGroups', 'printTimeSlots', 'codeToInitial', 'codeToColor'
         ));
     }
 }

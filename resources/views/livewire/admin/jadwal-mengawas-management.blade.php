@@ -131,132 +131,149 @@
                         <p>Belum ada ruang ujian. Silakan buat ruang ujian terlebih dahulu.</p>
                     </div>
                 @else
-                    {{-- Kelompok Kelas Filter Tabs --}}
-                    @if (count($kelompokOptions) > 1)
-                        <div class="p-3 border-b border-gray-200 bg-gray-50/50">
-                            <div class="flex flex-wrap gap-2">
-                                <button wire:click="$set('filterKelompok', '')"
-                                    class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {{ $filterKelompok === '' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100' }}">
-                                    Semua
-                                </button>
-                                @foreach ($kelompokOptions as $kelompok)
-                                    <button wire:click="$set('filterKelompok', '{{ $kelompok }}')"
-                                        class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {{ $filterKelompok === $kelompok ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100' }}">
-                                        {{ $kelompok }}
-                                    </button>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
                     <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead class="bg-gray-50">
+                        @php
+                            $hariPrint = [
+                                'Sunday' => 'Minggu',
+                                'Monday' => 'Senin',
+                                'Tuesday' => 'Selasa',
+                                'Wednesday' => 'Rabu',
+                                'Thursday' => 'Kamis',
+                                'Friday' => 'Jumat',
+                                'Saturday' => 'Sabtu',
+                            ];
+                            $romanPrint = [
+                                1 => 'I',
+                                2 => 'II',
+                                3 => 'III',
+                                4 => 'IV',
+                                5 => 'V',
+                                6 => 'VI',
+                                7 => 'VII',
+                                8 => 'VIII',
+                            ];
+                            $printDateCounts = collect($printTimeSlots)
+                                ->groupBy(fn($ts) => $ts['tanggal']->format('Y-m-d'))
+                                ->map->count();
+                            $printPrevDate = null;
+                        @endphp
+                        <table class="w-full text-xs">
+                            <thead class="bg-gray-50 uppercase text-gray-700">
                                 <tr>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">No</th>
-                                    <th
-                                        class="px-3 py-2 text-left font-medium text-gray-700 border-b whitespace-nowrap">
-                                        Hari/Tanggal</th>
-                                    <th
-                                        class="px-3 py-2 text-left font-medium text-gray-700 border-b whitespace-nowrap">
-                                        Mata Pelajaran</th>
-                                    <th
-                                        class="px-3 py-2 text-left font-medium text-gray-700 border-b whitespace-nowrap">
-                                        Kelompok</th>
-                                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">Waktu</th>
-                                    @foreach ($ruangList as $ruang)
-                                        <th
-                                            class="px-3 py-2 text-center font-medium text-gray-700 border-b whitespace-nowrap">
-                                            {{ $ruang->kode }}
+                                    <th class="px-2 py-2 border-b border-gray-200" rowspan="2"
+                                        style="width:60px;">Hari/<br>Tanggal</th>
+                                    @foreach ($printGroups as $pgIdx => $pg)
+                                        <th class="px-2 py-2 border-b border-gray-200" rowspan="2"
+                                            style="width:20px;">Jam<br>Ke</th>
+                                        @if ($pgIdx === 0)
+                                            <th class="px-2 py-2 border-b border-gray-200" rowspan="2"
+                                                style="width:55px;">Waktu</th>
+                                        @endif
+                                        <th class="px-2 py-2 border-b border-gray-200" rowspan="2">
+                                            Mata<br>Pelajaran<br><span style="font-size:10px;"
+                                                class="text-gray-500 font-normal capitalize">{{ $pg['label'] }}</span>
                                         </th>
+                                        <th class="px-2 py-2 border-b border-gray-200 text-center"
+                                            colspan="{{ count($pg['kelasList']) }}">Kelas</th>
+                                    @endforeach
+                                </tr>
+                                <tr class="bg-gray-50">
+                                    @foreach ($printGroups as $pg)
+                                        @foreach ($pg['kelasList'] as $kls)
+                                            <th class="px-1 py-1 border-b border-gray-200 text-center"
+                                                style="min-width:45px;"
+                                                title="{{ $kls['ruang_id'] ? 'Ruang ID: ' . $kls['ruang_id'] : 'Ruang belum diset' }}">
+                                                {{ $kls['short'] }}
+                                            </th>
+                                        @endforeach
                                     @endforeach
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
-                                    $hariIndonesia = [
-                                        'Sunday' => 'Minggu',
-                                        'Monday' => 'Senin',
-                                        'Tuesday' => 'Selasa',
-                                        'Wednesday' => 'Rabu',
-                                        'Thursday' => 'Kamis',
-                                        'Friday' => 'Jumat',
-                                        'Saturday' => 'Sabtu',
-                                    ];
-                                    $prevDate = null;
-                                    $dateColorIndex = 0;
-                                    $dateColors = [
-                                        'bg-white',
-                                        'bg-blue-50/50',
-                                        'bg-amber-50/50',
-                                        'bg-green-50/50',
-                                        'bg-purple-50/30',
-                                    ];
-                                @endphp
-                                @foreach ($jadwalList as $index => $jadwal)
+                                @foreach ($printTimeSlots as $tsIdx => $ts)
                                     @php
-                                        $currentDate = $jadwal->tanggal->format('Y-m-d');
-                                        if ($prevDate !== $currentDate) {
-                                            if ($prevDate !== null) {
-                                                $dateColorIndex++;
-                                            }
-                                            $prevDate = $currentDate;
-                                        }
-                                        $rowColor = $dateColors[$dateColorIndex % count($dateColors)];
+                                        $dateKey = $ts['tanggal']->format('Y-m-d');
+                                        $isNewDate = $dateKey !== $printPrevDate;
+                                        $dateRowspan = $printDateCounts[$dateKey] ?? 1;
+                                        $printPrevDate = $dateKey;
+                                        $rowColor = $tsIdx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50';
                                     @endphp
                                     <tr class="hover:bg-gray-100/50 {{ $rowColor }}">
-                                        <td class="px-3 py-2 border-b text-center">{{ $index + 1 }}</td>
-                                        <td class="px-3 py-2 border-b whitespace-nowrap">
-                                            {{ $hariIndonesia[$jadwal->tanggal->format('l')] }}<br>
-                                            <span
-                                                class="text-gray-500 text-xs">{{ $jadwal->tanggal->format('d/m/Y') }}</span>
-                                        </td>
-                                        <td class="px-3 py-2 border-b">{{ $jadwal->mata_pelajaran }}</td>
-                                        <td class="px-3 py-2 border-b whitespace-nowrap">
-                                            @if ($jadwal->kelompok_kelas)
+                                        @if ($isNewDate)
+                                            <td class="px-2 py-2 border-b border-gray-200 text-center font-medium"
+                                                rowspan="{{ $dateRowspan }}" style="white-space:nowrap;">
+                                                {{ $hariPrint[$ts['tanggal']->format('l')] }},<br>
                                                 <span
-                                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                    {{ $jadwal->kelompok_kelas }}
-                                                </span>
-                                            @else
-                                                <span class="text-gray-400 text-xs">Semua</span>
-                                            @endif
-                                        </td>
-                                        <td class="px-3 py-2 border-b whitespace-nowrap">{{ $jadwal->waktu }}</td>
-                                        @foreach ($ruangList as $ruang)
-                                            @php
-                                                $currentValue = $this->getAssignmentValue($jadwal->id, $ruang->id);
-                                                $availableCodes = $this->getAvailablePengawas($jadwal->id, $ruang->id);
-                                            @endphp
-                                            <td class="px-1 py-1 border-b">
-                                                <select class="form-select w-full text-center text-xs px-1 py-1"
-                                                    style="min-width: 60px;"
-                                                    wire:change="updateAssignment({{ $jadwal->id }}, {{ $ruang->id }}, $event.target.value)">
-                                                    <option value="">-</option>
-                                                    @foreach ($pengawasData as $data)
-                                                        @php
-                                                            $isCurrentlySelected =
-                                                                $currentValue === (string) $data['code'];
-                                                            $isAvailable = in_array(
-                                                                (string) $data['code'],
-                                                                $availableCodes,
-                                                            );
-                                                            $isDisabled = !$isCurrentlySelected && !$isAvailable;
-                                                            $assignedRuang = $isDisabled
-                                                                ? $this->getAssignedRuangName(
-                                                                    $jadwal->id,
-                                                                    $ruang->id,
-                                                                    (string) $data['code'],
-                                                                )
-                                                                : '';
-                                                        @endphp
-                                                        <option value="{{ $data['code'] }}"
-                                                            @selected($isCurrentlySelected) @disabled($isDisabled)
-                                                            @if ($isDisabled) title="Sudah ditugaskan di ruang {{ $assignedRuang }}" @endif>
-                                                            {{ $data['code'] }}{{ $isDisabled ? ' (Ruang ' . $assignedRuang . ')' : '' }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
+                                                    class="text-gray-500 text-[10px]">{{ $ts['tanggal']->format('d/m/Y') }}</span>
                                             </td>
+                                        @endif
+                                        @foreach ($printGroups as $pgIdx => $pg)
+                                            @php
+                                                $groupJadwal = $ts['jadwals']->first(function ($j) use ($pg) {
+                                                    return in_array($j->kelompok_kelas, $pg['kelompok_values']);
+                                                });
+                                            @endphp
+                                            <td class="px-2 py-2 border-b border-gray-200 text-center font-bold">
+                                                {{ $romanPrint[$ts['sort_order']] ?? $ts['sort_order'] }}</td>
+                                            @if ($pgIdx === 0)
+                                                <td class="px-2 py-2 border-b border-gray-200 text-center"
+                                                    style="white-space:nowrap;">{{ $ts['waktu'] }}</td>
+                                            @endif
+                                            <td class="px-2 py-2 border-b border-gray-200 text-center text-[11px]">
+                                                {{ $groupJadwal?->mata_pelajaran ?? '-' }}</td>
+                                            @foreach ($pg['kelasList'] as $kls)
+                                                <td class="px-0 py-1 border-b border-gray-200 align-middle">
+                                                    @if ($groupJadwal && $kls['ruang_id'])
+                                                        @php
+                                                            $currentValue = $this->getAssignmentValue(
+                                                                $groupJadwal->id,
+                                                                $kls['ruang_id'],
+                                                            );
+                                                            $availableCodes = $this->getAvailablePengawas(
+                                                                $groupJadwal->id,
+                                                                $kls['ruang_id'],
+                                                            );
+                                                            $bgColor =
+                                                                $currentValue && isset($codeToColor[$currentValue])
+                                                                    ? $codeToColor[$currentValue] . '80'
+                                                                    : 'transparent'; // Add 80 for 50% opacity
+                                                        @endphp
+                                                        <select
+                                                            class="w-full text-center text-xs px-0 py-1 border-0 focus:ring-1 focus:ring-blue-500 rounded font-bold"
+                                                            style="min-width: 45px; background-color: {{ $bgColor }};"
+                                                            wire:change="updateAssignment({{ $groupJadwal->id }}, {{ $kls['ruang_id'] }}, $event.target.value)">
+                                                            <option value="">-</option>
+                                                            @foreach ($pengawasData as $data)
+                                                                @php
+                                                                    $isCurrentlySelected =
+                                                                        $currentValue === (string) $data['code'];
+                                                                    $isAvailable = in_array(
+                                                                        (string) $data['code'],
+                                                                        $availableCodes,
+                                                                    );
+                                                                    $isDisabled =
+                                                                        !$isCurrentlySelected && !$isAvailable;
+                                                                    $assignedRuang = $isDisabled
+                                                                        ? $this->getAssignedRuangName(
+                                                                            $groupJadwal->id,
+                                                                            $kls['ruang_id'],
+                                                                            (string) $data['code'],
+                                                                        )
+                                                                        : '';
+                                                                @endphp
+                                                                <option value="{{ $data['code'] }}"
+                                                                    @selected($isCurrentlySelected)
+                                                                    @disabled($isDisabled)
+                                                                    @if ($isDisabled) title="Telah ditugaskan di ruang {{ $assignedRuang }}" @endif>
+                                                                    {{ $data['initial'] }}{{ $isDisabled ? ' (R.' . $assignedRuang . ')' : '' }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                    @else
+                                                        <div class="text-center text-gray-400">-</div>
+                                                    @endif
+                                                </td>
+                                            @endforeach
                                         @endforeach
                                     </tr>
                                 @endforeach

@@ -103,21 +103,34 @@ class JadwalMengawasManagement extends Component
         return (string) $value;
     }
 
-    // Get available pengawas codes for a specific jadwal and ruang (excluding already assigned)
+    // Get available pengawas codes for a specific jadwal and ruang (excluding already assigned in same time slot)
     public function getAvailablePengawas(int $jadwalId, int $ruangId): array
     {
-        $assignedCodes = [];
+        // Find all jadwal IDs in the same time slot (same tanggal + sort_order)
+        $jadwal = JadwalUjian::find($jadwalId);
+        $sameSlotIds = $jadwal
+            ? JadwalUjian::where('kegiatan_ujian_id', $this->kegiatanUjian->id)
+                ->where('tanggal', $jadwal->tanggal)
+                ->where('sort_order', $jadwal->sort_order)
+                ->pluck('id')
+                ->toArray()
+            : [$jadwalId];
 
-        foreach ($this->assignments[$jadwalId] ?? [] as $existingRuangId => $existingCode) {
-            if ($existingRuangId != $ruangId && $existingCode !== '' && !is_array($existingCode)) {
-                $assignedCodes[] = (string)$existingCode;
+        $assignedCodes = [];
+        foreach ($sameSlotIds as $slotJadwalId) {
+            foreach ($this->assignments[$slotJadwalId] ?? [] as $existingRuangId => $existingCode) {
+                // Skip current ruang in current jadwal
+                if ($slotJadwalId == $jadwalId && $existingRuangId == $ruangId) continue;
+                if ($existingCode !== '' && !is_array($existingCode)) {
+                    $assignedCodes[] = (string) $existingCode;
+                }
             }
         }
 
         $available = [];
         foreach (range(1, count($this->selectedPengawas)) as $code) {
-            if (!in_array((string)$code, $assignedCodes)) {
-                $available[] = (string)$code;
+            if (!in_array((string) $code, $assignedCodes)) {
+                $available[] = (string) $code;
             }
         }
 

@@ -413,7 +413,9 @@ class JadwalMengawasManagement extends Component
             // Build groups per kelompok, then merge those with same jadwal pattern
             $rawGroups = [];
             foreach ($kelompokValues as $kv) {
-                $kelasList = $allKelas->filter(fn($k) => $k->tingkat === $kv)->values();
+                // Strip "Kelas " prefix from kelompok_kelas to match Kelas.tingkat
+                $cleanTingkat = preg_replace('/^Kelas\s+/i', '', $kv);
+                $kelasList = $allKelas->filter(fn($k) => $k->tingkat === $cleanTingkat || $k->tingkat === $kv)->values();
                 $rawGroups[] = [
                     'kelompok_values' => [$kv],
                     'kelasList' => $kelasList->map(fn($k) => [
@@ -448,7 +450,11 @@ class JadwalMengawasManagement extends Component
                     }
                 }
                 $processed[] = $i;
-                $arabicVals = collect($mg['kelompok_values'])->sort()->map(fn($t) => $romanToArabic[$t] ?? $t)->values();
+                // Convert kelompok_values to arabic for label (strip "Kelas " prefix first)
+                $arabicVals = collect($mg['kelompok_values'])->sort()->map(function($t) use ($romanToArabic) {
+                    $clean = preg_replace('/^Kelas\s+/i', '', $t);
+                    return $romanToArabic[$clean] ?? $clean;
+                })->values();
                 $mg['label'] = 'Kelas ' . $arabicVals->join(', ', ' & ');
                 $printGroups[] = $mg;
             }

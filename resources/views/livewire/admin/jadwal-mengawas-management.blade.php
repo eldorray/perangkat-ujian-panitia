@@ -131,117 +131,129 @@
                         <p>Belum ada ruang ujian. Silakan buat ruang ujian terlebih dahulu.</p>
                     </div>
                 @else
+                    {{-- Kelompok Kelas Filter Tabs --}}
+                    @if (count($kelompokOptions) > 1)
+                        <div class="p-3 border-b border-gray-200 bg-gray-50/50">
+                            <div class="flex flex-wrap gap-2">
+                                <button wire:click="$set('filterKelompok', '')"
+                                    class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {{ $filterKelompok === '' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100' }}">
+                                    Semua
+                                </button>
+                                @foreach ($kelompokOptions as $kelompok)
+                                    <button wire:click="$set('filterKelompok', '{{ $kelompok }}')"
+                                        class="px-3 py-1.5 rounded-lg text-xs font-medium transition-colors {{ $filterKelompok === $kelompok ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-100' }}">
+                                        {{ $kelompok }}
+                                    </button>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                     <div class="overflow-x-auto">
-                        @php
-                            $hariIndonesia = [
-                                'Sunday' => 'Minggu',
-                                'Monday' => 'Senin',
-                                'Tuesday' => 'Selasa',
-                                'Wednesday' => 'Rabu',
-                                'Thursday' => 'Kamis',
-                                'Friday' => 'Jumat',
-                                'Saturday' => 'Sabtu',
-                            ];
-                            $romanNumerals = [
-                                1 => 'I',
-                                2 => 'II',
-                                3 => 'III',
-                                4 => 'IV',
-                                5 => 'V',
-                                6 => 'VI',
-                                7 => 'VII',
-                                8 => 'VIII',
-                            ];
-                            $ruangKelasLabel = [];
-                            foreach ($ruangList as $r) {
-                                $kn = null;
-                                foreach ($printGroups as $pg) {
-                                    foreach ($pg['kelasList'] as $kls) {
-                                        if ($kls['ruang_id'] == $r->id) {
-                                            $kn = $kls['short'];
-                                            break 2;
-                                        }
-                                    }
-                                }
-                                $ruangKelasLabel[$r->id] = $kn;
-                            }
-                            $dateCounts = $jadwalList->groupBy(fn($j) => $j->tanggal->format('Y-m-d'))->map->count();
-                            $prevDateKey = null;
-                        @endphp
-                        <table class="w-full text-xs border-collapse">
+                        <table class="w-full text-sm">
                             <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-2 py-2 text-center font-medium text-gray-700 border-b border-r"
-                                        rowspan="2">Hari/<br>Tanggal</th>
-                                    <th class="px-2 py-2 text-center font-medium text-gray-700 border-b border-r"
-                                        rowspan="2">Jam<br>Ke</th>
-                                    <th class="px-2 py-2 text-center font-medium text-gray-700 border-b border-r"
-                                        rowspan="2">Waktu</th>
-                                    <th class="px-2 py-2 text-center font-medium text-gray-700 border-b border-r"
-                                        rowspan="2">Mata<br>Pelajaran</th>
-                                    <th class="px-1 py-1 text-center font-medium text-gray-700 border-b"
-                                        colspan="{{ $ruangList->count() }}">RUANG</th>
-                                </tr>
-                                <tr>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">No</th>
+                                    <th
+                                        class="px-3 py-2 text-left font-medium text-gray-700 border-b whitespace-nowrap">
+                                        Hari/Tanggal</th>
+                                    <th
+                                        class="px-3 py-2 text-left font-medium text-gray-700 border-b whitespace-nowrap">
+                                        Mata Pelajaran</th>
+                                    <th
+                                        class="px-3 py-2 text-left font-medium text-gray-700 border-b whitespace-nowrap">
+                                        Kelompok</th>
+                                    <th class="px-3 py-2 text-left font-medium text-gray-700 border-b">Waktu</th>
                                     @foreach ($ruangList as $ruang)
                                         <th
-                                            class="px-1 py-1 text-center font-medium text-gray-600 border-b text-[10px] whitespace-nowrap">
-                                            @if ($ruangKelasLabel[$ruang->id])
-                                                {{ $ruangKelasLabel[$ruang->id] }}<br>
-                                            @endif
-                                            <span class="text-gray-400">{{ $ruang->kode }}</span>
+                                            class="px-3 py-2 text-center font-medium text-gray-700 border-b whitespace-nowrap">
+                                            {{ $ruang->kode }}
                                         </th>
                                     @endforeach
                                 </tr>
                             </thead>
                             <tbody>
+                                @php
+                                    $hariIndonesia = [
+                                        'Sunday' => 'Minggu',
+                                        'Monday' => 'Senin',
+                                        'Tuesday' => 'Selasa',
+                                        'Wednesday' => 'Rabu',
+                                        'Thursday' => 'Kamis',
+                                        'Friday' => 'Jumat',
+                                        'Saturday' => 'Sabtu',
+                                    ];
+                                    $prevDate = null;
+                                    $dateColorIndex = 0;
+                                    $dateColors = [
+                                        'bg-white',
+                                        'bg-blue-50/50',
+                                        'bg-amber-50/50',
+                                        'bg-green-50/50',
+                                        'bg-purple-50/30',
+                                    ];
+                                @endphp
                                 @foreach ($jadwalList as $index => $jadwal)
                                     @php
-                                        $dateKey = $jadwal->tanggal->format('Y-m-d');
-                                        $isNewDate = $dateKey !== $prevDateKey;
-                                        $dateRowspan = $dateCounts[$dateKey] ?? 1;
-                                        $prevDateKey = $dateKey;
+                                        $currentDate = $jadwal->tanggal->format('Y-m-d');
+                                        if ($prevDate !== $currentDate) {
+                                            if ($prevDate !== null) {
+                                                $dateColorIndex++;
+                                            }
+                                            $prevDate = $currentDate;
+                                        }
+                                        $rowColor = $dateColors[$dateColorIndex % count($dateColors)];
                                     @endphp
-                                    <tr
-                                        class="hover:bg-gray-50/50 {{ $index % 2 === 0 ? 'bg-white' : 'bg-gray-50/30' }}">
-                                        @if ($isNewDate)
-                                            <td class="px-2 py-2 border-b border-r text-center font-medium whitespace-nowrap"
-                                                rowspan="{{ $dateRowspan }}">
-                                                {{ $hariIndonesia[$jadwal->tanggal->format('l')] }}<br>
+                                    <tr class="hover:bg-gray-100/50 {{ $rowColor }}">
+                                        <td class="px-3 py-2 border-b text-center">{{ $index + 1 }}</td>
+                                        <td class="px-3 py-2 border-b whitespace-nowrap">
+                                            {{ $hariIndonesia[$jadwal->tanggal->format('l')] }}<br>
+                                            <span
+                                                class="text-gray-500 text-xs">{{ $jadwal->tanggal->format('d/m/Y') }}</span>
+                                        </td>
+                                        <td class="px-3 py-2 border-b">{{ $jadwal->mata_pelajaran }}</td>
+                                        <td class="px-3 py-2 border-b whitespace-nowrap">
+                                            @if ($jadwal->kelompok_kelas)
                                                 <span
-                                                    class="text-gray-500 text-[10px]">{{ $jadwal->tanggal->format('d/m/Y') }}</span>
-                                            </td>
-                                        @endif
-                                        <td class="px-2 py-1 border-b border-r text-center font-bold">
-                                            {{ $romanNumerals[$jadwal->sort_order] ?? $jadwal->sort_order }}</td>
-                                        <td
-                                            class="px-2 py-1 border-b border-r text-center whitespace-nowrap text-[10px]">
-                                            {{ $jadwal->waktu }}</td>
-                                        <td class="px-2 py-1 border-b border-r text-center text-[10px]">
-                                            {{ $jadwal->mata_pelajaran }}</td>
+                                                    class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    {{ $jadwal->kelompok_kelas }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400 text-xs">Semua</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-3 py-2 border-b whitespace-nowrap">{{ $jadwal->waktu }}</td>
                                         @foreach ($ruangList as $ruang)
                                             @php
                                                 $currentValue = $this->getAssignmentValue($jadwal->id, $ruang->id);
                                                 $availableCodes = $this->getAvailablePengawas($jadwal->id, $ruang->id);
                                             @endphp
-                                            <td class="px-0 py-0 border-b">
-                                                <select
-                                                    class="w-full text-center text-xs px-0 py-1 border-0 bg-transparent focus:ring-1 focus:ring-blue-500"
-                                                    style="min-width:40px;@if ($currentValue && isset($codeToColor[$currentValue])) background-color:{{ $codeToColor[$currentValue] }}; @endif"
+                                            <td class="px-1 py-1 border-b">
+                                                <select class="form-select w-full text-center text-xs px-1 py-1"
+                                                    style="min-width: 60px;"
                                                     wire:change="updateAssignment({{ $jadwal->id }}, {{ $ruang->id }}, $event.target.value)">
                                                     <option value="">-</option>
                                                     @foreach ($pengawasData as $data)
                                                         @php
-                                                            $isSelected = $currentValue === (string) $data['code'];
+                                                            $isCurrentlySelected =
+                                                                $currentValue === (string) $data['code'];
                                                             $isAvailable = in_array(
                                                                 (string) $data['code'],
                                                                 $availableCodes,
                                                             );
-                                                            $isDisabled = !$isSelected && !$isAvailable;
+                                                            $isDisabled = !$isCurrentlySelected && !$isAvailable;
+                                                            $assignedRuang = $isDisabled
+                                                                ? $this->getAssignedRuangName(
+                                                                    $jadwal->id,
+                                                                    $ruang->id,
+                                                                    (string) $data['code'],
+                                                                )
+                                                                : '';
                                                         @endphp
                                                         <option value="{{ $data['code'] }}"
-                                                            @selected($isSelected) @disabled($isDisabled)>
-                                                            {{ $data['initial'] }}</option>
+                                                            @selected($isCurrentlySelected) @disabled($isDisabled)
+                                                            @if ($isDisabled) title="Sudah ditugaskan di ruang {{ $assignedRuang }}" @endif>
+                                                            {{ $data['code'] }}{{ $isDisabled ? ' (Ruang ' . $assignedRuang . ')' : '' }}
+                                                        </option>
                                                     @endforeach
                                                 </select>
                                             </td>
@@ -281,16 +293,13 @@
                             @php
                                 $beban = $pengawasStats[(string) $data['code']] ?? 0;
                             @endphp
-                            <div class="flex items-center gap-3 p-3 rounded-lg border border-gray-100"
-                                style="background-color: {{ $data['color'] }}20;">
+                            <div class="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border border-gray-100">
                                 <span
-                                    class="inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold flex-shrink-0"
-                                    style="background-color: {{ $data['color'] }};">{{ $data['initial'] }}</span>
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 text-white text-sm font-bold flex-shrink-0">{{ $data['code'] }}</span>
                                 <div class="flex-1 min-w-0">
                                     <p class="font-medium text-gray-900 truncate">
                                         {{ $data['guru']->full_name_with_titles }}</p>
-                                    <p class="text-xs text-gray-500">Kode: {{ $data['code'] }} &bull;
-                                        {{ $data['guru']->nip ?: '-' }}</p>
+                                    <p class="text-xs text-gray-500">{{ $data['guru']->nip ?: '-' }}</p>
                                 </div>
                                 @if ($beban > 0)
                                     <span
@@ -353,13 +362,13 @@
 
                 <!-- Title -->
                 <div class="text-center mb-4">
-                    <h2 class="text-lg font-bold">JADWAL MENGAWAS</h2>
-                    <p class="text-sm">{{ $kegiatanUjian->nama_ujian }}</p>
-                    <p class="text-sm">Tahun Ajaran {{ $kegiatanUjian->tahunAjaran->nama }}</p>
+                    <h2 class="text-lg font-bold">JADWAL PENGAWAS {{ strtoupper($kegiatanUjian->nama_ujian) }}</h2>
+                    <p class="text-sm">TAHUN PELAJARAN {{ $kegiatanUjian->tahunAjaran->nama }}</p>
+                    <p class="text-sm">{{ strtoupper($schoolSettings['nama_sekolah'] ?? '') }}</p>
                 </div>
 
-                <!-- Table Jadwal (same layout as edit) -->
-                <div class="overflow-x-auto mb-4">
+                <!-- Table Jadwal -->
+                <div class="overflow-x-auto mb-6">
                     @php
                         $hariPrint = [
                             'Sunday' => 'MINGGU',
@@ -380,46 +389,50 @@
                             7 => 'VII',
                             8 => 'VIII',
                         ];
-                        $printRuangKelasLabel = [];
-                        foreach ($ruangList as $r) {
-                            $kn = null;
-                            foreach ($printGroups as $pg) {
-                                foreach ($pg['kelasList'] as $kls) {
-                                    if ($kls['ruang_id'] == $r->id) {
-                                        $kn = $kls['short'];
-                                        break 2;
-                                    }
-                                }
-                            }
-                            $printRuangKelasLabel[$r->id] = $kn;
-                        }
-                        $printDateCounts = $jadwalList->groupBy(fn($j) => $j->tanggal->format('Y-m-d'))->map->count();
+                        $printDateCounts = collect($printTimeSlots)
+                            ->groupBy(fn($ts) => $ts['tanggal']->format('Y-m-d'))
+                            ->map->count();
                         $printPrevDate = null;
+                        // Count total data rows for legend rowspan
+                        $totalRows = count($printTimeSlots);
+                        $legendCount = count($pengawasData);
                     @endphp
                     <table class="w-full border-collapse border border-black" style="font-size: 7pt;">
                         <thead>
                             <tr class="bg-gray-100">
-                                <th class="border border-black px-1 py-1" rowspan="2">HARI/<br>TANGGAL</th>
-                                <th class="border border-black px-1 py-1" rowspan="2">JAM<br>KE</th>
-                                <th class="border border-black px-1 py-1" rowspan="2">WAKTU</th>
-                                <th class="border border-black px-1 py-1" rowspan="2">MATA<br>PELAJARAN</th>
-                                <th class="border border-black px-1 py-1 text-center"
-                                    colspan="{{ $ruangList->count() }}">RUANG</th>
+                                <th class="border border-black px-1 py-1" rowspan="2" style="width:60px;">
+                                    HARI/<br>TANGGAL</th>
+                                @foreach ($printGroups as $pgIdx => $pg)
+                                    <th class="border border-black px-1 py-1" rowspan="2" style="width:20px;">
+                                        JAM<br>KE</th>
+                                    @if ($pgIdx === 0)
+                                        <th class="border border-black px-1 py-1" rowspan="2" style="width:55px;">
+                                            WAKTU</th>
+                                    @endif
+                                    <th class="border border-black px-1 py-1" rowspan="2">
+                                        MATA<br>PELAJARAN<br><span
+                                            style="font-size:6pt;">{{ strtoupper($pg['label']) }}</span></th>
+                                    <th class="border border-black px-1 py-1 text-center"
+                                        colspan="{{ count($pg['kelasList']) }}">KELAS</th>
+                                @endforeach
+                                <th class="border border-black px-1 py-1 text-center" rowspan="2"
+                                    style="width:30px;">KODE</th>
+                                <th class="border border-black px-1 py-1 text-center" rowspan="2"
+                                    style="width:100px;">NAMA GURU</th>
                             </tr>
                             <tr class="bg-gray-100">
-                                @foreach ($ruangList as $ruang)
-                                    <th class="border border-black px-1 py-1 text-center" style="min-width:22px;">
-                                        @if ($printRuangKelasLabel[$ruang->id])
-                                            {{ $printRuangKelasLabel[$ruang->id] }}/<br>
-                                        @endif{{ $ruang->kode }}
-                                    </th>
+                                @foreach ($printGroups as $pg)
+                                    @foreach ($pg['kelasList'] as $kls)
+                                        <th class="border border-black px-1 py-1 text-center" style="min-width:18px;">
+                                            {{ $kls['short'] }}</th>
+                                    @endforeach
                                 @endforeach
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($jadwalList as $jadwal)
+                            @foreach ($printTimeSlots as $tsIdx => $ts)
                                 @php
-                                    $dateKey = $jadwal->tanggal->format('Y-m-d');
+                                    $dateKey = $ts['tanggal']->format('Y-m-d');
                                     $isNewDate = $dateKey !== $printPrevDate;
                                     $dateRowspan = $printDateCounts[$dateKey] ?? 1;
                                     $printPrevDate = $dateKey;
@@ -428,55 +441,77 @@
                                     @if ($isNewDate)
                                         <td class="border border-black px-1 py-1 text-center font-bold"
                                             rowspan="{{ $dateRowspan }}" style="white-space:nowrap;">
-                                            {{ $hariPrint[$jadwal->tanggal->format('l')] }},<br>{{ $jadwal->tanggal->format('d/m/Y') }}
+                                            {{ $hariPrint[$ts['tanggal']->format('l')] }},<br>{{ $ts['tanggal']->format('d/m/Y') }}
                                         </td>
                                     @endif
-                                    <td class="border border-black px-1 py-1 text-center font-bold">
-                                        {{ $romanPrint[$jadwal->sort_order] ?? $jadwal->sort_order }}</td>
-                                    <td class="border border-black px-1 py-1 text-center" style="white-space:nowrap;">
-                                        {{ $jadwal->waktu }}</td>
-                                    <td class="border border-black px-1 py-1 text-center">
-                                        {{ $jadwal->mata_pelajaran }}</td>
-                                    @foreach ($ruangList as $ruang)
+                                    @foreach ($printGroups as $pgIdx => $pg)
                                         @php
-                                            $code = $assignments[$jadwal->id][$ruang->id] ?? '';
-                                            $initial = $code ? $codeToInitial[$code] ?? $code : '';
-                                            $color = $code ? $codeToColor[$code] ?? '#eee' : '';
+                                            $groupJadwal = $ts['jadwals']->first(function ($j) use ($pg) {
+                                                return in_array($j->kelompok_kelas, $pg['kelompok_values']);
+                                            });
                                         @endphp
-                                        <td class="border border-black px-1 py-1 text-center font-bold"
-                                            @if ($color) style="background-color: {{ $color }};" @endif>
-                                            {{ $initial ?: '-' }}
-                                        </td>
+                                        <td class="border border-black px-1 py-1 text-center font-bold">
+                                            {{ $romanPrint[$ts['sort_order']] ?? $ts['sort_order'] }}</td>
+                                        @if ($pgIdx === 0)
+                                            <td class="border border-black px-1 py-1 text-center"
+                                                style="white-space:nowrap;">{{ $ts['waktu'] }}</td>
+                                        @endif
+                                        <td class="border border-black px-1 py-1 text-center">
+                                            {{ $groupJadwal?->mata_pelajaran ?? '-' }}</td>
+                                        @foreach ($pg['kelasList'] as $kls)
+                                            @php
+                                                $code = '';
+                                                if ($groupJadwal && $kls['ruang_id']) {
+                                                    $code = $assignments[$groupJadwal->id][$kls['ruang_id']] ?? '';
+                                                }
+                                                $initial = $code ? $codeToInitial[$code] ?? $code : '';
+                                                $color = $code ? $codeToColor[$code] ?? '#eee' : '';
+                                            @endphp
+                                            <td class="border border-black px-1 py-1 text-center font-bold"
+                                                @if ($color) style="background-color:{{ $color }};" @endif>
+                                                {{ $initial ?: '' }}
+                                            </td>
+                                        @endforeach
                                     @endforeach
+                                    {{-- Legend columns --}}
+                                    @if ($tsIdx < $legendCount)
+                                        <td class="border border-black px-1 py-1 text-center font-bold"
+                                            style="background-color:{{ $pengawasData[$tsIdx]['color'] }};">
+                                            {{ $pengawasData[$tsIdx]['initial'] }}</td>
+                                        <td class="border border-black px-1 py-1 text-left"
+                                            style="white-space:nowrap;">
+                                            {{ $pengawasData[$tsIdx]['guru']->full_name_with_titles }}</td>
+                                    @else
+                                        <td class="border border-black px-1 py-1"></td>
+                                        <td class="border border-black px-1 py-1"></td>
+                                    @endif
                                 </tr>
                             @endforeach
+                            {{-- Extra legend rows if more pengawas than time slots --}}
+                            @for ($ei = $totalRows; $ei < $legendCount; $ei++)
+                                <tr>
+                                    <td class="border border-black px-1 py-1"
+                                        colspan="{{ 1 + count($printGroups) * 3 + collect($printGroups)->sum(fn($p) => count($p['kelasList'])) }}">
+                                    </td>
+                                    <td class="border border-black px-1 py-1 text-center font-bold"
+                                        style="background-color:{{ $pengawasData[$ei]['color'] }};">
+                                        {{ $pengawasData[$ei]['initial'] }}</td>
+                                    <td class="border border-black px-1 py-1 text-left" style="white-space:nowrap;">
+                                        {{ $pengawasData[$ei]['guru']->full_name_with_titles }}</td>
+                                </tr>
+                            @endfor
                         </tbody>
                     </table>
                 </div>
 
-                <!-- Kode Pengawas Legend -->
-                @if (count($pengawasData) > 0)
-                    <div class="mt-3">
-                        <div class="grid grid-cols-4 gap-1" style="font-size: 7pt;">
-                            @foreach ($pengawasData as $data)
-                                <div class="flex items-center gap-1 border border-gray-300 rounded px-1 py-0.5">
-                                    <span class="inline-block px-1 py-0.5 rounded font-bold text-center"
-                                        style="background-color: {{ $data['color'] }}; min-width:20px;">{{ $data['initial'] }}</span>
-                                    <span class="truncate">{{ $data['guru']->full_name_with_titles }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
-
                 <!-- Footer -->
-                <div class="mt-6 flex justify-end">
+                <div class="mt-8 flex justify-end">
                     <div class="text-center">
                         <p class="text-sm">{{ $schoolSettings['kabupaten'] ?? '' }},
                             {{ $kegiatanUjian->tanggal_dokumen ? $kegiatanUjian->tanggal_dokumen->translatedFormat('d F Y') : '.........................' }}
                         </p>
                         <p class="text-sm font-bold mt-1">Ketua Panitia</p>
-                        <div class="h-16"></div>
+                        <div class="h-20"></div>
                         <p class="text-sm font-bold">
                             {{ $kegiatanUjian->ketua_panitia ?? '____________________________' }}</p>
                         <p class="text-sm">NIP.

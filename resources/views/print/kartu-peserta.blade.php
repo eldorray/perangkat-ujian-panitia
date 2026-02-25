@@ -116,7 +116,7 @@
         }
 
         .student-details table td {
-            padding: 0.5px 0;
+            padding: 1px 0;
             vertical-align: top;
         }
 
@@ -163,7 +163,7 @@
         .schedule-table th,
         .schedule-table td {
             border: 1px solid #000;
-            padding: 1px 2px;
+            padding: 3px 6px;
             text-align: center;
         }
 
@@ -179,12 +179,12 @@
         }
 
         .schedule-table .col-hari {
-            width: 50px;
+            width: 82px;
             text-align: left;
         }
 
         .schedule-table .col-waktu {
-            width: 42px;
+            width: 62px;
         }
 
         .schedule-table .col-mapel {
@@ -306,8 +306,8 @@
 
         /* Make schedule table rows compact */
         .compact-row td {
-            padding: 0.5px 1px !important;
-            font-size: 5px !important;
+            padding: 4px 6px !important;
+            font-size: 8px !important;
             line-height: 1.1 !important;
         }
     </style>

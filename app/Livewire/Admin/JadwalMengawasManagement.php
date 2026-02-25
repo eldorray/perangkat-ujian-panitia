@@ -377,10 +377,11 @@ class JadwalMengawasManagement extends Component
 
             $initial = $this->generateInitial($words, $usedInitials);
             $usedInitials[] = $initial;
+            $guruColor = $colors[$pd['guru']->id % count($colors)];
             $codeToInitial[(string)$pd['code']] = $initial;
-            $codeToColor[(string)$pd['code']] = $colors[$i % count($colors)];
+            $codeToColor[(string)$pd['code']] = $guruColor;
             $pd['initial'] = $initial;
-            $pd['color'] = $colors[$i % count($colors)];
+            $pd['color'] = $guruColor;
         }
         unset($pd);
 

@@ -207,7 +207,7 @@
 
         /* Notes Section */
         .notes {
-            font-size: 5px;
+            font-size: 9px;
             margin-top: 1mm;
         }
 
@@ -231,7 +231,7 @@
             display: flex;
             justify-content: flex-end;
             text-align: center;
-            font-size: 6px;
+            font-size: 9px;
         }
 
         .signature-box {
@@ -239,18 +239,18 @@
         }
 
         .signature-date {
-            font-size: 5.5px;
+            font-size: 9px;
             margin-bottom: 1px;
         }
 
         .signature-title {
-            font-size: 5.5px;
+            font-size: 9px;
             margin-bottom: 12mm;
         }
 
         .signature-name {
             font-weight: bold;
-            font-size: 6px;
+            font-size: 9px;
             text-decoration: underline;
         }
 
@@ -433,16 +433,27 @@
                                         : collect();
                                 @endphp
                                 @if ($filteredJadwals->count() > 0)
-                                    @php $rowClass = $filteredJadwals->count() > 8 ? 'extra-compact-row' : 'compact-row'; @endphp
-                                    @foreach ($filteredJadwals as $index => $jadwal)
+                                    @php
+                                        $rowClass = $filteredJadwals->count() > 8 ? 'extra-compact-row' : 'compact-row';
+                                        $jadwalArr = $filteredJadwals->values();
+                                        $dateCounts = $jadwalArr
+                                            ->groupBy(fn($j) => $j->tanggal->format('Y-m-d'))
+                                            ->map->count();
+                                        $prevDate = null;
+                                    @endphp
+                                    @foreach ($jadwalArr as $index => $jadwal)
+                                        @php $dateKey = $jadwal->tanggal->format('Y-m-d'); @endphp
                                         <tr class="{{ $rowClass }}">
                                             <td>{{ $loop->iteration }}</td>
-                                            <td class="col-hari">{{ $jadwal->tanggal->translatedFormat('D, d/m/Y') }}
-                                            </td>
+                                            @if ($dateKey !== $prevDate)
+                                                <td class="col-hari" rowspan="{{ $dateCounts[$dateKey] }}">
+                                                    {{ $jadwal->tanggal->translatedFormat('D, d/m/Y') }}</td>
+                                            @endif
                                             <td>{{ $jadwal->waktu }}</td>
                                             <td class="col-mapel">{{ $jadwal->mata_pelajaran }}</td>
                                             <td class="ttd-cell"></td>
                                         </tr>
+                                        @php $prevDate = $dateKey; @endphp
                                     @endforeach
                                 @else
                                     @for ($i = 1; $i <= 5; $i++)

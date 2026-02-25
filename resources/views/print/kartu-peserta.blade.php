@@ -157,13 +157,13 @@
         .schedule-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 6px;
+            font-size: 8px;
         }
 
         .schedule-table th,
         .schedule-table td {
             border: 1px solid #000;
-            padding: 3px 6px;
+            padding: 2px 4px;
             text-align: center;
         }
 
@@ -171,20 +171,20 @@
             background: #333;
             color: #fff;
             font-weight: bold;
-            font-size: 5.5px;
+            font-size: 8px;
         }
 
         .schedule-table .col-no {
-            width: 12px;
+            width: 14px;
         }
 
         .schedule-table .col-hari {
-            width: 82px;
+            width: 90px;
             text-align: left;
         }
 
         .schedule-table .col-waktu {
-            width: 62px;
+            width: 68px;
         }
 
         .schedule-table .col-mapel {
@@ -197,11 +197,11 @@
         }
 
         .schedule-table td {
-            font-size: 5.5px;
+            font-size: 8px;
         }
 
         .schedule-table .ttd-cell {
-            font-size: 4.5px;
+            font-size: 7px;
             color: #333;
         }
 
@@ -306,9 +306,9 @@
 
         /* Make schedule table rows compact */
         .compact-row td {
-            padding: 0.5px 3px !important;
+            padding: 1.5px 4px !important;
             font-size: 8px !important;
-            line-height: 1 !important;
+            line-height: 1.2 !important;
         }
     </style>
 </head>

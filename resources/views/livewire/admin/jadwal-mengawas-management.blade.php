@@ -290,9 +290,9 @@
         </div>
 
         <div class="card" id="print-area">
-            <div class="p-6 print-content">
+            <div class="p-4 print-content">
                 <!-- Kop Surat -->
-                <div class="flex items-center gap-4 border-b-4 border-double border-black pb-3 mb-4">
+                <div class="flex items-center gap-4 border-b-4 border-double border-black pb-2 mb-2">
                     <div class="w-16 h-16 flex-shrink-0">
                         @if (!empty($schoolSettings['logo']))
                             <img src="{{ asset('storage/' . $schoolSettings['logo']) }}" alt="Logo"
@@ -317,7 +317,7 @@
                 </div>
 
                 <!-- Title -->
-                <div class="text-center mb-4">
+                <div class="text-center mb-2">
                     <h2 class="text-sm font-bold">JADWAL PENGAWAS {{ strtoupper($kegiatanUjian->nama_ujian) }}</h2>
                     <p class="text-xs">TAHUN PELAJARAN {{ $kegiatanUjian->tahunAjaran->nama }}</p>
                     <p class="text-xs">{{ strtoupper($schoolSettings['nama_sekolah'] ?? '') }}</p>
@@ -348,9 +348,6 @@
                                     <th class="border border-black px-1 py-1 text-center"
                                         colspan="{{ count($pg['kelasList']) }}">KELAS</th>
                                 @endforeach
-                                <th class="border border-black px-1 py-1 text-center" rowspan="2"
-                                    style="width:25px;">KODE</th>
-                                <th class="border border-black px-1 py-1 text-center" rowspan="2">NAMA GURU</th>
                             </tr>
                             <tr class="bg-gray-100">
                                 @foreach ($printGroups as $pg)
@@ -405,54 +402,72 @@
                                             </td>
                                         @endforeach
                                     @endforeach
-                                    {{-- Legend columns --}}
-                                    @if ($tsIdx < $legendCount)
-                                        <td class="border border-black px-1 py-1 text-center font-bold"
-                                            style="background-color:{{ $pengawasData[$tsIdx]['color'] }};">
-                                            {{ $pengawasData[$tsIdx]['initial'] }}</td>
-                                        <td class="border border-black px-1 py-1 text-left"
-                                            style="white-space:nowrap;">
-                                            {{ $pengawasData[$tsIdx]['guru']->full_name_with_titles }}</td>
-                                    @else
-                                        <td class="border border-black px-1 py-1"></td>
-                                        <td class="border border-black px-1 py-1"></td>
-                                    @endif
                                 </tr>
                             @endforeach
-                            @for ($ei = $totalRows; $ei < $legendCount; $ei++)
-                                @php
-                                    $colspan = 1;
-                                    foreach ($printGroups as $pgIdx2 => $pg2) {
-                                        $colspan += 2 + count($pg2['kelasList']);
-                                        if ($pgIdx2 === 0) {
-                                            $colspan += 1;
-                                        }
-                                    }
-                                @endphp
-                                <tr>
-                                    <td class="border border-black px-1 py-1" colspan="{{ $colspan }}"></td>
-                                    <td class="border border-black px-1 py-1 text-center font-bold"
-                                        style="background-color:{{ $pengawasData[$ei]['color'] }};">
-                                        {{ $pengawasData[$ei]['initial'] }}</td>
-                                    <td class="border border-black px-1 py-1 text-left" style="white-space:nowrap;">
-                                        {{ $pengawasData[$ei]['guru']->full_name_with_titles }}</td>
-                                </tr>
-                            @endfor
                         </tbody>
                     </table>
                 </div>
 
+                {{-- KODE DAN NAMA PENGAWAS - separate section below table --}}
+                @if (count($pengawasData) > 0)
+                    <div class="mb-3">
+                        <p class="font-bold mb-1" style="font-size: 7pt;">KODE DAN NAMA PENGAWAS:</p>
+                        <table class="border-collapse border border-black" style="font-size: 7pt;">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="border border-black px-2 py-0.5 text-center">NO</th>
+                                    <th class="border border-black px-2 py-0.5 text-center">KODE</th>
+                                    <th class="border border-black px-2 py-0.5 text-left">NAMA GURU</th>
+                                    <th class="border border-black px-2 py-0.5 text-center">NO</th>
+                                    <th class="border border-black px-2 py-0.5 text-center">KODE</th>
+                                    <th class="border border-black px-2 py-0.5 text-left">NAMA GURU</th>
+                                    <th class="border border-black px-2 py-0.5 text-center">NO</th>
+                                    <th class="border border-black px-2 py-0.5 text-center">KODE</th>
+                                    <th class="border border-black px-2 py-0.5 text-left">NAMA GURU</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @php
+                                    $cols = 3;
+                                    $rows = ceil(count($pengawasData) / $cols);
+                                @endphp
+                                @for ($r = 0; $r < $rows; $r++)
+                                    <tr>
+                                        @for ($c = 0; $c < $cols; $c++)
+                                            @php $idx = $c * $rows + $r; @endphp
+                                            @if ($idx < count($pengawasData))
+                                                <td class="border border-black px-2 py-0.5 text-center">
+                                                    {{ $idx + 1 }}</td>
+                                                <td class="border border-black px-2 py-0.5 text-center font-bold"
+                                                    style="background-color:{{ $pengawasData[$idx]['color'] }};">
+                                                    {{ $pengawasData[$idx]['initial'] }}</td>
+                                                <td class="border border-black px-2 py-0.5 text-left"
+                                                    style="white-space:nowrap;">
+                                                    {{ $pengawasData[$idx]['guru']->full_name_with_titles }}</td>
+                                            @else
+                                                <td class="border border-black px-2 py-0.5"></td>
+                                                <td class="border border-black px-2 py-0.5"></td>
+                                                <td class="border border-black px-2 py-0.5"></td>
+                                            @endif
+                                        @endfor
+                                    </tr>
+                                @endfor
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+
                 <!-- Footer -->
-                <div class="mt-6 flex justify-end">
+                <div class="mt-3 flex justify-end">
                     <div class="text-center">
-                        <p class="text-sm">{{ $schoolSettings['kabupaten'] ?? '' }},
+                        <p style="font-size: 8pt;">{{ $schoolSettings['kabupaten'] ?? '' }},
                             {{ $kegiatanUjian->tanggal_dokumen ? $kegiatanUjian->tanggal_dokumen->translatedFormat('d F Y') : '.........................' }}
                         </p>
-                        <p class="text-sm font-bold mt-1">Ketua Panitia</p>
-                        <div class="h-20"></div>
-                        <p class="text-sm font-bold">
+                        <p style="font-size: 8pt;" class="font-bold mt-1">Ketua Panitia</p>
+                        <div class="h-16"></div>
+                        <p style="font-size: 8pt;" class="font-bold">
                             {{ $kegiatanUjian->ketua_panitia ?? '____________________________' }}</p>
-                        <p class="text-sm">NIP.
+                        <p style="font-size: 8pt;">NIP.
                             {{ $kegiatanUjian->nip_ketua_panitia ?? '................................' }}</p>
                     </div>
                 </div>
@@ -481,14 +496,14 @@
                 left: 0;
                 top: 0;
                 width: 100%;
-                padding: 10mm;
+                padding: 5mm 8mm;
                 box-shadow: none !important;
                 border: none !important;
             }
 
             @page {
-                size: A4 landscape;
-                margin: 10mm;
+                size: 330mm 215mm;
+                margin: 7mm 10mm;
             }
 
             .card {

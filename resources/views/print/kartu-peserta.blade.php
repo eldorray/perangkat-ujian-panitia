@@ -107,7 +107,6 @@
         .student-info {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 1mm;
             align-items: flex-start;
         }
 
@@ -116,7 +115,7 @@
         }
 
         .student-details table td {
-            padding: 1px 0;
+            padding: 0.5px 0;
             vertical-align: top;
         }
 
@@ -208,7 +207,7 @@
         /* Notes Section */
         .notes {
             font-size: 5px;
-            margin-bottom: 2mm;
+            margin-top: 4mm;
         }
 
         .notes-title {

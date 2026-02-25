@@ -408,71 +408,70 @@
                     </table>
                 </div>
 
-                {{-- KODE DAN NAMA PENGAWAS - separate section below table --}}
-                @if (count($pengawasData) > 0)
-                    <div class="mb-3">
-                        <p class="font-bold mb-1" style="font-size: 7pt;">KODE DAN NAMA PENGAWAS:</p>
-                        <table class="border-collapse border border-black" style="font-size: 7pt;">
-                            <thead>
-                                <tr class="bg-gray-100">
-                                    <th class="border border-black px-2 py-0.5 text-center">NO</th>
-                                    <th class="border border-black px-2 py-0.5 text-center">KODE</th>
-                                    <th class="border border-black px-2 py-0.5 text-left">NAMA GURU</th>
-                                    <th class="border border-black px-2 py-0.5 text-center">NO</th>
-                                    <th class="border border-black px-2 py-0.5 text-center">KODE</th>
-                                    <th class="border border-black px-2 py-0.5 text-left">NAMA GURU</th>
-                                    <th class="border border-black px-2 py-0.5 text-center">NO</th>
-                                    <th class="border border-black px-2 py-0.5 text-center">KODE</th>
-                                    <th class="border border-black px-2 py-0.5 text-left">NAMA GURU</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php
-                                    $cols = 3;
-                                    $rows = ceil(count($pengawasData) / $cols);
-                                @endphp
-                                @for ($r = 0; $r < $rows; $r++)
-                                    <tr>
-                                        @for ($c = 0; $c < $cols; $c++)
-                                            @php $idx = $c * $rows + $r; @endphp
-                                            @if ($idx < count($pengawasData))
-                                                <td class="border border-black px-2 py-0.5 text-center">
-                                                    {{ $idx + 1 }}</td>
-                                                <td class="border border-black px-2 py-0.5 text-center font-bold"
-                                                    style="background-color:{{ $pengawasData[$idx]['color'] }};">
-                                                    {{ $pengawasData[$idx]['initial'] }}</td>
-                                                <td class="border border-black px-2 py-0.5 text-left"
-                                                    style="white-space:nowrap;">
-                                                    {{ $pengawasData[$idx]['guru']->full_name_with_titles }}</td>
-                                            @else
-                                                <td class="border border-black px-2 py-0.5"></td>
-                                                <td class="border border-black px-2 py-0.5"></td>
-                                                <td class="border border-black px-2 py-0.5"></td>
-                                            @endif
-                                        @endfor
+                {{-- KODE DAN NAMA PENGAWAS + Footer sejajar --}}
+                <div class="flex items-start justify-between mt-3">
+                    {{-- Kode dan Nama Pengawas (kiri) --}}
+                    @if (count($pengawasData) > 0)
+                        <div>
+                            <p class="font-bold mb-1" style="font-size: 7pt;">KODE DAN NAMA PENGAWAS:</p>
+                            <table class="border-collapse border border-black" style="font-size: 7pt;">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="border border-black px-2 py-0.5 text-center">NO</th>
+                                        <th class="border border-black px-2 py-0.5 text-center">KODE</th>
+                                        <th class="border border-black px-2 py-0.5 text-left">NAMA GURU</th>
+                                        <th class="border border-black px-2 py-0.5 text-center">NO</th>
+                                        <th class="border border-black px-2 py-0.5 text-center">KODE</th>
+                                        <th class="border border-black px-2 py-0.5 text-left">NAMA GURU</th>
+                                        <th class="border border-black px-2 py-0.5 text-center">NO</th>
+                                        <th class="border border-black px-2 py-0.5 text-center">KODE</th>
+                                        <th class="border border-black px-2 py-0.5 text-left">NAMA GURU</th>
                                     </tr>
-                                @endfor
-                            </tbody>
-                        </table>
-
-                        <div class="mt-3 flex justify-end">
-                            <div class="text-center">
-                                <p style="font-size: 8pt;">{{ $schoolSettings['kabupaten'] ?? '' }},
-                                    {{ $kegiatanUjian->tanggal_dokumen ? $kegiatanUjian->tanggal_dokumen->translatedFormat('d F Y') : '.........................' }}
-                                </p>
-                                <p style="font-size: 8pt;" class="font-bold mt-1">Ketua Panitia</p>
-                                <div class="h-16"></div>
-                                <p style="font-size: 8pt;" class="font-bold">
-                                    {{ $kegiatanUjian->ketua_panitia ?? '____________________________' }}</p>
-                                <p style="font-size: 8pt;">NIP.
-                                    {{ $kegiatanUjian->nip_ketua_panitia ?? '................................' }}</p>
-                            </div>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $cols = 3;
+                                        $rows = ceil(count($pengawasData) / $cols);
+                                    @endphp
+                                    @for ($r = 0; $r < $rows; $r++)
+                                        <tr>
+                                            @for ($c = 0; $c < $cols; $c++)
+                                                @php $idx = $c * $rows + $r; @endphp
+                                                @if ($idx < count($pengawasData))
+                                                    <td class="border border-black px-2 py-0.5 text-center">
+                                                        {{ $idx + 1 }}</td>
+                                                    <td class="border border-black px-2 py-0.5 text-center font-bold"
+                                                        style="background-color:{{ $pengawasData[$idx]['color'] }};">
+                                                        {{ $pengawasData[$idx]['initial'] }}</td>
+                                                    <td class="border border-black px-2 py-0.5 text-left"
+                                                        style="white-space:nowrap;">
+                                                        {{ $pengawasData[$idx]['guru']->full_name_with_titles }}</td>
+                                                @else
+                                                    <td class="border border-black px-2 py-0.5"></td>
+                                                    <td class="border border-black px-2 py-0.5"></td>
+                                                    <td class="border border-black px-2 py-0.5"></td>
+                                                @endif
+                                            @endfor
+                                        </tr>
+                                    @endfor
+                                </tbody>
+                            </table>
                         </div>
+                    @endif
+
+                    {{-- Footer / Tanda Tangan (kanan) --}}
+                    <div class="text-center flex-shrink-0">
+                        <p style="font-size: 8pt;">{{ $schoolSettings['kabupaten'] ?? '' }},
+                            {{ $kegiatanUjian->tanggal_dokumen ? $kegiatanUjian->tanggal_dokumen->translatedFormat('d F Y') : '.........................' }}
+                        </p>
+                        <p style="font-size: 8pt;" class="font-bold mt-1">Ketua Panitia</p>
+                        <div class="h-16"></div>
+                        <p style="font-size: 8pt;" class="font-bold">
+                            {{ $kegiatanUjian->ketua_panitia ?? '____________________________' }}</p>
+                        <p style="font-size: 8pt;">NIP.
+                            {{ $kegiatanUjian->nip_ketua_panitia ?? '................................' }}</p>
                     </div>
-                @endif
-
-                <!-- Footer -->
-
+                </div>
             </div>
         </div>
     @endif

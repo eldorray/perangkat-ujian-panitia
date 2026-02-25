@@ -306,8 +306,8 @@
 
         /* Make schedule table rows compact */
         .compact-row td {
-            padding: 4px 6px !important;
-            font-size: 8px !important;
+            padding: 1.5px 3px !important;
+            font-size: 6px !important;
             line-height: 1.1 !important;
         }
     </style>

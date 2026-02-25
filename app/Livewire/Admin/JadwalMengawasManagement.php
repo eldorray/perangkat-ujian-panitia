@@ -491,16 +491,37 @@ class JadwalMengawasManagement extends Component
 
     private function generateInitial(array $words, array $used): string
     {
-        $candidates = [];
-        if (isset($words[0])) $candidates[] = strtoupper(mb_substr($words[0], 0, 1));
-        if (count($words) >= 2) $candidates[] = strtoupper(mb_substr($words[0], 0, 1) . mb_substr($words[1], 0, 1));
-        if (isset($words[0]) && mb_strlen($words[0]) >= 2) $candidates[] = strtoupper(mb_substr($words[0], 0, 2));
-        if (count($words) >= 3) $candidates[] = strtoupper(mb_substr($words[0], 0, 1) . mb_substr($words[1], 0, 1) . mb_substr($words[2], 0, 1));
-        foreach ($candidates as $c) { if (!in_array($c, $used)) return $c; }
-        for ($len = 3; $len <= mb_strlen($words[0] ?? ''); $len++) {
+        // Primary: first letter of each word (e.g., "Abdul Hamid" → "AH")
+        $primary = strtoupper(implode('', array_map(fn($w) => mb_substr($w, 0, 1), $words)));
+        if (!in_array($primary, $used)) return $primary;
+
+        // Fallback 1: first letter of first word + first 2 chars of last word (e.g., "AHA" for "Abdul Hamid Ahmad")
+        if (count($words) >= 2) {
+            $lastWord = end($words);
+            for ($len = 2; $len <= mb_strlen($lastWord); $len++) {
+                $c = strtoupper(mb_substr($words[0], 0, 1) . mb_substr($lastWord, 0, $len));
+                if (!in_array($c, $used)) return $c;
+            }
+        }
+
+        // Fallback 2: first 2 chars of first word + first letter of remaining words
+        if (mb_strlen($words[0]) >= 2) {
+            $c = strtoupper(mb_substr($words[0], 0, 2) . implode('', array_map(fn($w) => mb_substr($w, 0, 1), array_slice($words, 1))));
+            if (!in_array($c, $used)) return $c;
+        }
+
+        // Fallback 3: progressively longer substrings of first word
+        for ($len = 2; $len <= mb_strlen($words[0] ?? ''); $len++) {
             $c = strtoupper(mb_substr($words[0], 0, $len));
             if (!in_array($c, $used)) return $c;
         }
+
+        // Last resort: append number suffix to primary (e.g., "AH1", "AH2")
+        for ($num = 1; $num <= 99; $num++) {
+            $c = $primary . $num;
+            if (!in_array($c, $used)) return $c;
+        }
+
         return (string)(count($used) + 1);
     }
 }

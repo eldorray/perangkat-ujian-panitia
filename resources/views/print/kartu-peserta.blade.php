@@ -79,26 +79,26 @@
         }
 
         .school-info .kop-line {
-            font-size: 5px;
+            font-size: 12px;
             margin-bottom: 0.5px;
         }
 
         .school-info .school-name {
-            font-size: 9px;
+            font-size: 14px;
             font-weight: bold;
             margin: 1px 0;
         }
 
         .school-info .school-address {
-            font-size: 5px;
+            font-size: 8px;
         }
 
         .school-info .school-contact {
-            font-size: 5px;
+            font-size: 8px;
         }
 
         .school-info .school-city {
-            font-size: 6px;
+            font-size: 8px;
             font-weight: bold;
             text-decoration: underline;
         }
@@ -107,7 +107,7 @@
         .student-info {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 2mm;
+            margin-bottom: 1mm;
             align-items: flex-start;
         }
 
@@ -121,8 +121,8 @@
         }
 
         .student-details .label {
-            width: 50px;
-            font-size: 6.5px;
+            width: 60px;
+            font-size: 8px;
         }
 
         .student-details .separator {
@@ -131,7 +131,7 @@
 
         .student-details .value {
             font-weight: bold;
-            font-size: 7px;
+            font-size: 9px;
         }
 
         .card-title-box {
@@ -193,7 +193,7 @@
         }
 
         .schedule-table .col-ttd {
-            width: 30px;
+            width: 90px;
         }
 
         .schedule-table td {
@@ -307,7 +307,7 @@
         /* Make schedule table rows compact */
         .compact-row td {
             padding: 1.5px 3px !important;
-            font-size: 6px !important;
+            font-size: 8px !important;
             line-height: 1.1 !important;
         }
     </style>

@@ -128,9 +128,9 @@ class JadwalMengawasManagement extends Component
         }
 
         $available = [];
-        foreach (range(1, count($this->selectedPengawas)) as $code) {
-            if (!in_array((string) $code, $assignedCodes)) {
-                $available[] = (string) $code;
+        foreach ($this->selectedPengawas as $guruId) {
+            if (!in_array((string) $guruId, $assignedCodes)) {
+                $available[] = (string) $guruId;
             }
         }
 
@@ -193,7 +193,6 @@ class JadwalMengawasManagement extends Component
         // Add current value back to available list (so we can cycle past it)
         if ($currentValue !== '' && !in_array($currentValue, $availableCodes)) {
             $availableCodes[] = $currentValue;
-            sort($availableCodes, SORT_NUMERIC);
         }
 
         if (empty($availableCodes)) {
@@ -242,9 +241,9 @@ class JadwalMengawasManagement extends Component
 
         $this->assignments = [];
 
-        // Acak kode SEKALI saja — kode guru tetap konsisten di semua hari
-        $codes = range(1, $pengawasCount);
-        shuffle($codes);
+        // Acak guru IDs SEKALI saja — penugasan guru tetap konsisten di semua hari
+        $guruIds = $this->selectedPengawas;
+        shuffle($guruIds);
 
         foreach ($jadwalList as $jadwalIndex => $jadwal) {
             $this->assignments[$jadwal->id] = [];
@@ -256,7 +255,7 @@ class JadwalMengawasManagement extends Component
             foreach ($ruangIds as $ruangIndex => $ruangId) {
                 if ($ruangIndex < $pengawasCount) {
                     $codeIdx = ($ruangIndex + $offset) % $pengawasCount;
-                    $this->assignments[$jadwal->id][$ruangId] = (string)$codes[$codeIdx];
+                    $this->assignments[$jadwal->id][$ruangId] = (string)$guruIds[$codeIdx];
                 } else {
                     $this->assignments[$jadwal->id][$ruangId] = '';
                 }
@@ -285,15 +284,14 @@ class JadwalMengawasManagement extends Component
             return $stats;
         }
 
-        $pengawasCount = count($this->selectedPengawas);
-        for ($code = 1; $code <= $pengawasCount; $code++) {
+        foreach ($this->selectedPengawas as $guruId) {
             $count = 0;
             foreach ($this->assignments as $jadwalAssignments) {
-                if (in_array((string)$code, array_values(is_array($jadwalAssignments) ? $jadwalAssignments : []), true)) {
+                if (in_array((string)$guruId, array_values(is_array($jadwalAssignments) ? $jadwalAssignments : []), true)) {
                     $count++;
                 }
             }
-            $stats[(string)$code] = $count;
+            $stats[(string)$guruId] = $count;
         }
 
         return $stats;
@@ -312,16 +310,16 @@ class JadwalMengawasManagement extends Component
 
         $guruList = $guruQuery->get();
 
-        // Get selected pengawas with their codes (1-based index)
+        // Get selected pengawas with their guru IDs as stable codes
         $pengawasData = [];
         if (!empty($this->selectedPengawas)) {
             $selectedGuruList = Guru::whereIn('id', $this->selectedPengawas)
                 ->orderBy('full_name')
                 ->get();
 
-            foreach ($selectedGuruList as $index => $guru) {
+            foreach ($selectedGuruList as $guru) {
                 $pengawasData[] = [
-                    'code' => $index + 1,
+                    'code' => (string) $guru->id,
                     'guru' => $guru,
                 ];
             }

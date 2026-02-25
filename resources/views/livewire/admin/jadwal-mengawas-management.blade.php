@@ -64,7 +64,10 @@
                     @forelse ($guruList as $guru)
                         @php
                             $isSelected = in_array($guru->id, $selectedPengawas);
-                            $codeIndex = $isSelected ? array_search($guru->id, $selectedPengawas) + 1 : null;
+                            $guruPdKey = $isSelected
+                                ? collect($pengawasData)->search(fn($pd) => (string) $pd['code'] === (string) $guru->id)
+                                : false;
+                            $guruPd = $guruPdKey !== false ? $pengawasData[$guruPdKey] : null;
                         @endphp
                         <label
                             class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0">
@@ -72,10 +75,10 @@
                                 @checked($isSelected) class="form-checkbox h-5 w-5 text-blue-600 rounded">
                             <div class="flex-1">
                                 <p class="font-medium text-gray-900">
-                                    @if ($isSelected && $codeIndex && isset($pengawasData[$codeIndex - 1]))
+                                    @if ($isSelected && $guruPd)
                                         <span
                                             class="inline-flex items-center justify-center w-7 h-7 rounded text-white text-xs mr-2 font-bold"
-                                            style="background-color: {{ $pengawasData[$codeIndex - 1]['color'] ?? '#3B82F6' }}">{{ $pengawasData[$codeIndex - 1]['initial'] ?? $codeIndex }}</span>
+                                            style="background-color: {{ $guruPd['color'] ?? '#3B82F6' }}">{{ $guruPd['initial'] ?? '' }}</span>
                                     @endif
                                     {{ $guru->full_name_with_titles }}
                                 </p>

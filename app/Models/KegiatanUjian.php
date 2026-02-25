@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Hash;
 
 class KegiatanUjian extends Model
@@ -44,6 +45,11 @@ class KegiatanUjian extends Model
     public function jadwalUjians(): HasMany
     {
         return $this->hasMany(JadwalUjian::class)->orderBy('kelompok_kelas')->orderBy('tanggal')->orderBy('sort_order');
+    }
+
+    public function penugasanPengawas(): HasOne
+    {
+        return $this->hasOne(PenugasanPengawas::class);
     }
 
     /**

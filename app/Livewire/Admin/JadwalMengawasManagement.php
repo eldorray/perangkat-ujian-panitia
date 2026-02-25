@@ -7,6 +7,7 @@ use App\Models\JadwalUjian;
 use App\Models\KegiatanUjian;
 use App\Models\Kelas;
 use App\Models\PenempatanRuangUjian;
+use App\Models\PenugasanPengawas;
 use App\Models\RuangUjian;
 use App\Models\SchoolSetting;
 use Illuminate\View\View;
@@ -39,9 +40,12 @@ class JadwalMengawasManagement extends Component
     {
         $this->kegiatanUjian = KegiatanUjian::with('tahunAjaran')->findOrFail($id);
 
-        // Load saved selections from session
-        $this->selectedPengawas = session("jadwal_mengawas_pengawas_{$id}", []);
-        $this->assignments = session("jadwal_mengawas_assignments_{$id}", []);
+        // Load saved data from database
+        $saved = PenugasanPengawas::where('kegiatan_ujian_id', $id)->first();
+        if ($saved) {
+            $this->selectedPengawas = $saved->selected_pengawas ?? [];
+            $this->assignments = $saved->assignments ?? [];
+        }
     }
 
     public function togglePengawas(int $guruId): void
@@ -51,21 +55,17 @@ class JadwalMengawasManagement extends Component
         } else {
             $this->selectedPengawas[] = $guruId;
         }
-
-        session(["jadwal_mengawas_pengawas_{$this->kegiatanUjian->id}" => $this->selectedPengawas]);
     }
 
     public function selectAllPengawas(): void
     {
         $guruList = Guru::active()->orderBy('full_name')->get();
         $this->selectedPengawas = $guruList->pluck('id')->toArray();
-        session(["jadwal_mengawas_pengawas_{$this->kegiatanUjian->id}" => $this->selectedPengawas]);
     }
 
     public function clearPengawas(): void
     {
         $this->selectedPengawas = [];
-        session(["jadwal_mengawas_pengawas_{$this->kegiatanUjian->id}" => $this->selectedPengawas]);
     }
 
     public function updateAssignment(int $jadwalId, int $ruangId, string $value): void
@@ -87,8 +87,6 @@ class JadwalMengawasManagement extends Component
         }
 
         $this->assignments[$jadwalId][$ruangId] = $code === '' || $code === '-' ? '' : $code;
-
-        session(["jadwal_mengawas_assignments_{$this->kegiatanUjian->id}" => $this->assignments]);
     }
 
     public function getAssignmentValue(int $jadwalId, int $ruangId): string
@@ -262,16 +260,26 @@ class JadwalMengawasManagement extends Component
             }
         }
 
-        session(["jadwal_mengawas_assignments_{$this->kegiatanUjian->id}" => $this->assignments]);
-
-        $this->dispatch('toast', type: 'success', message: 'Pengawas berhasil diacak otomatis!');
+        $this->dispatch('toast', type: 'success', message: 'Pengawas berhasil diacak otomatis! Klik Simpan untuk menyimpan.');
     }
 
     public function clearAssignments(): void
     {
         $this->assignments = [];
-        session(["jadwal_mengawas_assignments_{$this->kegiatanUjian->id}" => $this->assignments]);
-        $this->dispatch('toast', type: 'success', message: 'Semua penugasan berhasil dihapus!');
+        $this->dispatch('toast', type: 'success', message: 'Semua penugasan berhasil dihapus! Klik Simpan untuk menyimpan.');
+    }
+
+    public function saveToDatabase(): void
+    {
+        PenugasanPengawas::updateOrCreate(
+            ['kegiatan_ujian_id' => $this->kegiatanUjian->id],
+            [
+                'selected_pengawas' => $this->selectedPengawas,
+                'assignments' => $this->assignments,
+            ]
+        );
+
+        $this->dispatch('toast', type: 'success', message: 'Penugasan pengawas berhasil disimpan!');
     }
 
     /**

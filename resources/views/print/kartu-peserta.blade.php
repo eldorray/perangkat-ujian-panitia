@@ -150,8 +150,8 @@
         .schedule-container {
             flex: 1;
             overflow: hidden;
-            margin-bottom: 2mm;
-            padding-bottom: 2mm;
+            margin-bottom: 1mm;
+            padding-bottom: 1mm;
         }
 
         .schedule-table {
@@ -208,7 +208,7 @@
         /* Notes Section */
         .notes {
             font-size: 5px;
-            margin-top: 4mm;
+            margin-top: 1mm;
         }
 
         .notes-title {
@@ -309,6 +309,13 @@
             padding: 1.5px 4px !important;
             font-size: 8px !important;
             line-height: 1.2 !important;
+        }
+
+        /* Extra compact for many subjects (>8) */
+        .extra-compact-row td {
+            padding: 0.5px 3px !important;
+            font-size: 6.5px !important;
+            line-height: 1 !important;
         }
     </style>
 </head>
@@ -426,8 +433,9 @@
                                         : collect();
                                 @endphp
                                 @if ($filteredJadwals->count() > 0)
+                                    @php $rowClass = $filteredJadwals->count() > 8 ? 'extra-compact-row' : 'compact-row'; @endphp
                                     @foreach ($filteredJadwals as $index => $jadwal)
-                                        <tr class="compact-row">
+                                        <tr class="{{ $rowClass }}">
                                             <td>{{ $loop->iteration }}</td>
                                             <td class="col-hari">{{ $jadwal->tanggal->translatedFormat('D, d/m/Y') }}
                                             </td>

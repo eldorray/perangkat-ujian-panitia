@@ -454,23 +454,25 @@
                                 @endfor
                             </tbody>
                         </table>
+
+                        <div class="mt-3 flex justify-end">
+                            <div class="text-center">
+                                <p style="font-size: 8pt;">{{ $schoolSettings['kabupaten'] ?? '' }},
+                                    {{ $kegiatanUjian->tanggal_dokumen ? $kegiatanUjian->tanggal_dokumen->translatedFormat('d F Y') : '.........................' }}
+                                </p>
+                                <p style="font-size: 8pt;" class="font-bold mt-1">Ketua Panitia</p>
+                                <div class="h-16"></div>
+                                <p style="font-size: 8pt;" class="font-bold">
+                                    {{ $kegiatanUjian->ketua_panitia ?? '____________________________' }}</p>
+                                <p style="font-size: 8pt;">NIP.
+                                    {{ $kegiatanUjian->nip_ketua_panitia ?? '................................' }}</p>
+                            </div>
+                        </div>
                     </div>
                 @endif
 
                 <!-- Footer -->
-                <div class="mt-3 flex justify-end">
-                    <div class="text-center">
-                        <p style="font-size: 8pt;">{{ $schoolSettings['kabupaten'] ?? '' }},
-                            {{ $kegiatanUjian->tanggal_dokumen ? $kegiatanUjian->tanggal_dokumen->translatedFormat('d F Y') : '.........................' }}
-                        </p>
-                        <p style="font-size: 8pt;" class="font-bold mt-1">Ketua Panitia</p>
-                        <div class="h-16"></div>
-                        <p style="font-size: 8pt;" class="font-bold">
-                            {{ $kegiatanUjian->ketua_panitia ?? '____________________________' }}</p>
-                        <p style="font-size: 8pt;">NIP.
-                            {{ $kegiatanUjian->nip_ketua_panitia ?? '................................' }}</p>
-                    </div>
-                </div>
+
             </div>
         </div>
     @endif

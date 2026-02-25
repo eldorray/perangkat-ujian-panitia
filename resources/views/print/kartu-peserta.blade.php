@@ -32,7 +32,7 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             grid-template-rows: repeat(2, 1fr);
-            gap: 4mm;
+            gap: 3mm;
             page-break-after: always;
         }
 
@@ -42,7 +42,7 @@
 
         .card {
             border: 1.5px solid #000;
-            padding: 3mm;
+            padding: 2.5mm;
             background: #fff;
             overflow: hidden;
             display: flex;
@@ -54,8 +54,8 @@
             display: flex;
             gap: 2mm;
             border-bottom: 1.5px solid #000;
-            padding-bottom: 2mm;
-            margin-bottom: 2mm;
+            padding-bottom: 1.5mm;
+            margin-bottom: 1.5mm;
         }
 
         .school-logo {
@@ -314,8 +314,8 @@
         /* Extra compact for many subjects (>8) */
         .extra-compact-row td {
             padding: 0.5px 3px !important;
-            font-size: 6.5px !important;
-            line-height: 1 !important;
+            font-size: 7.5px !important;
+            line-height: 1.1 !important;
         }
     </style>
 </head>

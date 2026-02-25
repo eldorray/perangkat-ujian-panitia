@@ -151,6 +151,7 @@
             flex: 1;
             overflow: hidden;
             margin-bottom: 2mm;
+            padding-bottom: 2mm;
         }
 
         .schedule-table {

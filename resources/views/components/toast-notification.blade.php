@@ -7,7 +7,8 @@
     message: '',
     type: '{{ $type }}'
 }"
-    x-on:notify.window="show = true; message = $event.detail.message; type = $event.detail.type || 'success'; setTimeout(() => show = false, 3000)">
+    x-on:notify.window="show = true; message = $event.detail.message; type = $event.detail.type || 'success'; setTimeout(() => show = false, 3000)"
+    x-on:toast.window="show = true; message = $event.detail[0]?.message ?? $event.detail.message; type = $event.detail[0]?.type ?? $event.detail.type ?? 'success'; setTimeout(() => show = false, 3000)">
     <div x-show="show" x-transition:enter="transition ease-out duration-300"
         x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
         x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"

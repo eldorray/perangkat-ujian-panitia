@@ -526,6 +526,9 @@
 
     @stack('scripts')
 
+    <!-- Toast Notification (Global) -->
+    <x-toast-notification />
+
     <!-- Modal Portal - modals will be rendered here via Alpine -->
     <div id="modal-portal"></div>
 </body>

@@ -207,7 +207,7 @@
 
         /* Notes Section */
         .notes {
-            font-size: 9px;
+            font-size: 6px;
             margin-top: 1mm;
         }
 
@@ -231,7 +231,7 @@
             display: flex;
             justify-content: flex-end;
             text-align: center;
-            font-size: 9px;
+            font-size: 6px;
         }
 
         .signature-box {
@@ -239,18 +239,18 @@
         }
 
         .signature-date {
-            font-size: 9px;
+            font-size: 5.5px;
             margin-bottom: 1px;
         }
 
         .signature-title {
-            font-size: 9px;
+            font-size: 5.5px;
             margin-bottom: 12mm;
         }
 
         .signature-name {
             font-weight: bold;
-            font-size: 9px;
+            font-size: 6px;
             text-decoration: underline;
         }
 

@@ -189,6 +189,14 @@
             color: #374151;
         }
 
+        .page-section {
+            page-break-after: always;
+        }
+
+        .page-section:last-child {
+            page-break-after: avoid;
+        }
+
         @media print {
             .print-actions {
                 display: none !important;
@@ -215,83 +223,93 @@
         </button>
     </div>
 
-    <div class="container">
-        <!-- Kop Surat -->
-        <div class="kop-surat">
-            <div class="kop-logo">
-                @if (!empty($schoolSettings['logo']))
-                    <img src="{{ asset('storage/' . $schoolSettings['logo']) }}" alt="Logo">
-                @endif
-            </div>
-            <div class="kop-text">
-                <div class="kop-institution">KEMENTERIAN AGAMA REPUBLIK INDONESIA</div>
-                <div class="kop-school">{{ strtoupper($schoolSettings['nama_sekolah'] ?? 'NAMA SEKOLAH') }}</div>
-                <div class="kop-address">{{ $schoolSettings['alamat'] ?? '' }} {{ $schoolSettings['kecamatan'] ?? '' }}
-                    {{ $schoolSettings['kabupaten'] ?? '' }}</div>
-            </div>
-        </div>
+    @php
+        // Chunk the kelompok groups into pairs of 2
+        $kelompokChunks = $jadwalGrouped->chunk(2);
+    @endphp
 
-        <!-- Judul -->
-        <div class="title">
-            <h1>JADWAL UJIAN</h1>
-            <div class="subtitle">{{ $kegiatanUjian->nama_ujian }}</div>
-            <div class="subtitle">{{ $kegiatanUjian->tahunAjaran->nama }} - {{ $kegiatanUjian->tahunAjaran->semester }}
-            </div>
-        </div>
-
-        <!-- Tabel Jadwal per Kelompok Kelas -->
-        @foreach ($jadwalGrouped as $kelompok => $jadwalByDate)
-            @if ($jadwalGrouped->count() > 1)
-                <h2
-                    style="font-size: 12pt; font-weight: bold; margin-top: 15px; margin-bottom: 10px; text-align: center; background: #f0f0f0; padding: 5px;">
-                    {{ $kelompok }}
-                </h2>
-            @endif
-
-            <table class="jadwal-table">
-                <thead>
-                    <tr>
-                        <th class="col-no">No</th>
-                        <th class="col-hari">Hari/Tanggal</th>
-                        <th class="col-waktu">Waktu</th>
-                        <th>Mata Pelajaran</th>
-                        <th>Keterangan</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php $no = 1; @endphp
-                    @foreach ($jadwalByDate as $tanggal => $jadwals)
-                        @foreach ($jadwals as $index => $jadwal)
-                            <tr>
-                                <td class="col-no">{{ $no++ }}</td>
-                                @if ($index === 0)
-                                    <td class="col-hari" rowspan="{{ $jadwals->count() }}">{{ $jadwal->hari_tanggal }}
-                                    </td>
-                                @endif
-                                <td class="col-waktu">{{ $jadwal->waktu }}</td>
-                                <td>{{ $jadwal->mata_pelajaran }}</td>
-                                <td>{{ $jadwal->keterangan ?? '-' }}</td>
-                            </tr>
-                        @endforeach
-                    @endforeach
-                </tbody>
-            </table>
-        @endforeach
-
-        <!-- Tanda Tangan -->
-        <div class="signature">
-            <div class="signature-box">
-                <div class="signature-date">{{ $schoolSettings['kabupaten'] ?? 'Kota' }},
-                    {{ ($kegiatanUjian->tanggal_dokumen ?? now())->translatedFormat('d F Y') }}</div>
-                <div class="signature-title">Ketua Panitia,</div>
-                <div class="signature-name">{{ $kegiatanUjian->ketua_panitia ?? '.............................' }}
+    @foreach ($kelompokChunks as $chunkIndex => $chunk)
+        <div class="container page-section">
+            <!-- Kop Surat -->
+            <div class="kop-surat">
+                <div class="kop-logo">
+                    @if (!empty($schoolSettings['logo']))
+                        <img src="{{ asset('storage/' . $schoolSettings['logo']) }}" alt="Logo">
+                    @endif
                 </div>
-                @if (!empty($kegiatanUjian->nip_ketua_panitia))
-                    <div class="signature-nip">NIP. {{ $kegiatanUjian->nip_ketua_panitia }}</div>
+                <div class="kop-text">
+                    <div class="kop-institution">KEMENTERIAN AGAMA REPUBLIK INDONESIA</div>
+                    <div class="kop-school">{{ strtoupper($schoolSettings['nama_sekolah'] ?? 'NAMA SEKOLAH') }}</div>
+                    <div class="kop-address">{{ $schoolSettings['alamat'] ?? '' }}
+                        {{ $schoolSettings['kecamatan'] ?? '' }}
+                        {{ $schoolSettings['kabupaten'] ?? '' }}</div>
+                </div>
+            </div>
+
+            <!-- Judul -->
+            <div class="title">
+                <h1>JADWAL UJIAN</h1>
+                <div class="subtitle">{{ $kegiatanUjian->nama_ujian }}</div>
+                <div class="subtitle">{{ $kegiatanUjian->tahunAjaran->nama }} -
+                    {{ $kegiatanUjian->tahunAjaran->semester }}
+                </div>
+            </div>
+
+            <!-- Tabel Jadwal per Kelompok Kelas (2 per halaman) -->
+            @foreach ($chunk as $kelompok => $jadwalByDate)
+                @if ($jadwalGrouped->count() > 1)
+                    <h2
+                        style="font-size: 12pt; font-weight: bold; margin-top: 15px; margin-bottom: 10px; text-align: center; background: #f0f0f0; padding: 5px;">
+                        {{ $kelompok }}
+                    </h2>
                 @endif
+
+                <table class="jadwal-table">
+                    <thead>
+                        <tr>
+                            <th class="col-no">No</th>
+                            <th class="col-hari">Hari/Tanggal</th>
+                            <th class="col-waktu">Waktu</th>
+                            <th>Mata Pelajaran</th>
+                            <th>Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @php $no = 1; @endphp
+                        @foreach ($jadwalByDate as $tanggal => $jadwals)
+                            @foreach ($jadwals as $index => $jadwal)
+                                <tr>
+                                    <td class="col-no">{{ $no++ }}</td>
+                                    @if ($index === 0)
+                                        <td class="col-hari" rowspan="{{ $jadwals->count() }}">
+                                            {{ $jadwal->hari_tanggal }}
+                                        </td>
+                                    @endif
+                                    <td class="col-waktu">{{ $jadwal->waktu }}</td>
+                                    <td>{{ $jadwal->mata_pelajaran }}</td>
+                                    <td>{{ $jadwal->keterangan ?? '-' }}</td>
+                                </tr>
+                            @endforeach
+                        @endforeach
+                    </tbody>
+                </table>
+            @endforeach
+
+            <!-- Tanda Tangan -->
+            <div class="signature">
+                <div class="signature-box">
+                    <div class="signature-date">{{ $schoolSettings['kabupaten'] ?? 'Kota' }},
+                        {{ ($kegiatanUjian->tanggal_dokumen ?? now())->translatedFormat('d F Y') }}</div>
+                    <div class="signature-title">Ketua Panitia,</div>
+                    <div class="signature-name">{{ $kegiatanUjian->ketua_panitia ?? '.............................' }}
+                    </div>
+                    @if (!empty($kegiatanUjian->nip_ketua_panitia))
+                        <div class="signature-nip">NIP. {{ $kegiatanUjian->nip_ketua_panitia }}</div>
+                    @endif
+                </div>
             </div>
         </div>
-    </div>
+    @endforeach
 </body>
 
 </html>

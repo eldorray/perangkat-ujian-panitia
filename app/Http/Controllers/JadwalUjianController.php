@@ -17,8 +17,8 @@ class JadwalUjianController extends Controller
             ->groupBy(fn($item) => $item->kelompok_kelas ?: 'Semua Kelas')
             ->map(fn($group) => $group->groupBy(fn($item) => $item->tanggal->format('Y-m-d')));
 
-        // Merge kelompok_kelas into print page groups
-        // Kelas I & II -> 1 page, Kelas III -> 1 page, Kelas IV, V, VI -> 1 page
+        // Merge kelompok_kelas into print page groups (same schedule = 1 table)
+        // Kelas I & II -> 1 page 1 table, Kelas III -> 1 page, Kelas IV, V, VI -> 1 page 1 table
         $printGroups = collect();
         $mergeRules = [
             ['keys' => ['Kelas I', 'Kelas II'], 'label' => 'Kelas I & II'],
@@ -28,22 +28,20 @@ class JadwalUjianController extends Controller
 
         $usedKeys = [];
         foreach ($mergeRules as $rule) {
-            $matchedGroups = collect();
             foreach ($rule['keys'] as $key) {
                 if ($jadwalGrouped->has($key)) {
-                    $matchedGroups->put($key, $jadwalGrouped->get($key));
-                    $usedKeys[] = $key;
+                    // Take jadwal from first matching kelompok (same schedule)
+                    $printGroups->put($rule['label'], $jadwalGrouped->get($key));
+                    $usedKeys = array_merge($usedKeys, $rule['keys']);
+                    break;
                 }
-            }
-            if ($matchedGroups->isNotEmpty()) {
-                $printGroups->put($rule['label'], $matchedGroups);
             }
         }
 
         // Add any remaining kelompok that didn't match merge rules
         foreach ($jadwalGrouped as $key => $value) {
             if (!in_array($key, $usedKeys)) {
-                $printGroups->put($key, collect([$key => $value]));
+                $printGroups->put($key, $value);
             }
         }
 

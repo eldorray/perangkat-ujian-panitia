@@ -223,7 +223,7 @@
         </button>
     </div>
 
-    @foreach ($printGroups as $groupLabel => $kelompokInGroup)
+    @foreach ($printGroups as $groupLabel => $jadwalByDate)
         <div class="container page-section">
             <!-- Kop Surat -->
             <div class="kop-surat">
@@ -258,44 +258,35 @@
                 </h2>
             @endif
 
-            <!-- Tabel Jadwal per Kelompok Kelas dalam group ini -->
-            @foreach ($kelompokInGroup as $kelompok => $jadwalByDate)
-                @if ($kelompokInGroup->count() > 1)
-                    <h3 style="font-size: 11pt; font-weight: bold; margin-top: 10px; margin-bottom: 8px;">
-                        {{ $kelompok }}
-                    </h3>
-                @endif
-
-                <table class="jadwal-table">
-                    <thead>
-                        <tr>
-                            <th class="col-no">No</th>
-                            <th class="col-hari">Hari/Tanggal</th>
-                            <th class="col-waktu">Waktu</th>
-                            <th>Mata Pelajaran</th>
-                            <th>Keterangan</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @php $no = 1; @endphp
-                        @foreach ($jadwalByDate as $tanggal => $jadwals)
-                            @foreach ($jadwals as $index => $jadwal)
-                                <tr>
-                                    <td class="col-no">{{ $no++ }}</td>
-                                    @if ($index === 0)
-                                        <td class="col-hari" rowspan="{{ $jadwals->count() }}">
-                                            {{ $jadwal->hari_tanggal }}
-                                        </td>
-                                    @endif
-                                    <td class="col-waktu">{{ $jadwal->waktu }}</td>
-                                    <td>{{ $jadwal->mata_pelajaran }}</td>
-                                    <td>{{ $jadwal->keterangan ?? '-' }}</td>
-                                </tr>
-                            @endforeach
+            <table class="jadwal-table">
+                <thead>
+                    <tr>
+                        <th class="col-no">No</th>
+                        <th class="col-hari">Hari/Tanggal</th>
+                        <th class="col-waktu">Waktu</th>
+                        <th>Mata Pelajaran</th>
+                        <th>Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @php $no = 1; @endphp
+                    @foreach ($jadwalByDate as $tanggal => $jadwals)
+                        @foreach ($jadwals as $index => $jadwal)
+                            <tr>
+                                <td class="col-no">{{ $no++ }}</td>
+                                @if ($index === 0)
+                                    <td class="col-hari" rowspan="{{ $jadwals->count() }}">
+                                        {{ $jadwal->hari_tanggal }}
+                                    </td>
+                                @endif
+                                <td class="col-waktu">{{ $jadwal->waktu }}</td>
+                                <td>{{ $jadwal->mata_pelajaran }}</td>
+                                <td>{{ $jadwal->keterangan ?? '-' }}</td>
+                            </tr>
                         @endforeach
-                    </tbody>
-                </table>
-            @endforeach
+                    @endforeach
+                </tbody>
+            </table>
 
             <!-- Tanda Tangan -->
             <div class="signature">

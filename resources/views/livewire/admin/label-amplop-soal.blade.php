@@ -13,11 +13,6 @@
             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
             </svg>
-            <a href="{{ route('admin.kegiatan-ujian.daftar-hadir-panitia', $kegiatanUjian->id) }}"
-                class="hover:text-gray-700" wire:navigate>Menu Panitia</a>
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
             <span class="font-medium text-gray-900">Label Amplop Soal</span>
         </nav>
     </div>
@@ -42,89 +37,109 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Settings -->
-        <div class="card lg:col-span-1 overflow-hidden">
-            <div class="p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
-                <h3 class="text-lg font-semibold text-gray-900">Pengaturan</h3>
-                <p class="text-sm text-gray-500 mt-0.5">Pilih jadwal dan atur cadangan soal</p>
+    <!-- Flash Messages -->
+    @if (session('message'))
+        <div class="mb-6 p-4 rounded-xl bg-green-50 border border-green-200 text-green-800">
+            {{ session('message') }}
+        </div>
+    @endif
+
+    <!-- Tabs Kelompok Kelas -->
+    @if ($kelompokList->isNotEmpty())
+        <div class="mb-6">
+            <div class="flex flex-wrap gap-2">
+                @foreach ($kelompokList as $kelompok)
+                    <button wire:click="$set('selectedKelompok', '{{ $kelompok }}')"
+                        class="px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200
+                            {{ $selectedKelompok === $kelompok
+                                ? 'bg-gray-900 text-white shadow-md shadow-gray-900/25'
+                                : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50 hover:border-gray-300' }}">
+                        {{ $kelompok }}
+                    </button>
+                @endforeach
             </div>
-            <div class="p-5 space-y-5">
-                <div>
-                    <label class="form-label">Pilih Jadwal/Mapel</label>
-                    <select wire:model.live="selectedJadwalId" class="form-select w-full">
-                        <option value="">-- Semua Jadwal --</option>
-                        @php
-                            $hariIndonesia = [
-                                'Sunday' => 'Minggu',
-                                'Monday' => 'Senin',
-                                'Tuesday' => 'Selasa',
-                                'Wednesday' => 'Rabu',
-                                'Thursday' => 'Kamis',
-                                'Friday' => 'Jumat',
-                                'Saturday' => 'Sabtu',
-                            ];
-                        @endphp
-                        @foreach ($jadwalList as $jadwal)
-                            <option value="{{ $jadwal->id }}">
-                                {{ $hariIndonesia[$jadwal->tanggal->format('l')] }},
-                                {{ $jadwal->tanggal->format('d/m/Y') }} -
-                                {{ $jadwal->mata_pelajaran }}{{ $jadwal->kelompok_kelas ? ' [' . $jadwal->kelompok_kelas . ']' : '' }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="form-label">Soal Cadangan (per ruang)</label>
-                    <input type="number" wire:model.live="jumlahCadangan" class="form-input w-full" min="0">
-                </div>
+        </div>
+    @endif
 
-                <!-- Info jumlah soal per ruang -->
-                <div
-                    class="rounded-xl border p-3 {{ $hasPenempatan ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200' }}">
-                    <div class="flex items-start gap-2">
-                        @if ($hasPenempatan)
-                            <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            <div class="text-sm text-green-800">
-                                <strong>Jumlah soal otomatis</strong> dari data penempatan siswa per ruang.
-                            </div>
-                        @else
-                            <svg class="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" fill="none"
-                                stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.072 16.5c-.77.833.192 2.5 1.732 2.5z">
-                                </path>
-                            </svg>
-                            <div class="text-sm text-amber-800">
-                                <strong>Belum ada penempatan.</strong> Jumlah soal menggunakan kapasitas ruang.
-                            </div>
-                        @endif
-                    </div>
+    <!-- Tabel Pelajaran -->
+    <div class="card overflow-hidden">
+        <div class="p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900">Daftar Mata Pelajaran</h3>
+                    <p class="text-sm text-gray-500 mt-0.5">
+                        {{ $selectedKelompok ?: 'Semua Kelas' }} — Isi jumlah soal dan cadangan per mata pelajaran
+                    </p>
                 </div>
+            </div>
+        </div>
 
-                <!-- Ringkasan per ruang -->
-                @if ($ruangList->isNotEmpty())
-                    <div>
-                        <label class="form-label mb-2">Jumlah Soal per Ruang</label>
-                        <div class="space-y-1.5 max-h-48 overflow-y-auto">
-                            @foreach ($ruangList as $ruang)
-                                <div class="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2">
-                                    <span class="font-medium text-gray-700">Ruang {{ $ruang->kode }}</span>
-                                    <span class="text-gray-900 font-semibold">{{ $ruang->jumlah_siswa }} +
-                                        {{ $jumlahCadangan }} = {{ $ruang->jumlah_siswa + $jumlahCadangan }}</span>
-                                </div>
+        <div class="p-0">
+            @if ($jadwals->isNotEmpty())
+                <div class="overflow-x-auto">
+                    <table class="table w-full">
+                        <thead>
+                            <tr>
+                                <th class="w-14 text-center">No</th>
+                                <th class="w-48">Hari/Tanggal</th>
+                                <th>Mata Pelajaran</th>
+                                <th class="w-28 text-center">Waktu</th>
+                                <th class="w-36 text-center">Jumlah Soal</th>
+                                <th class="w-36 text-center">Cadangan</th>
+                                <th class="w-28 text-center">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($jadwals as $index => $jadwal)
+                                <tr class="hover:bg-gray-50/50">
+                                    <td class="text-center text-gray-500">{{ $index + 1 }}</td>
+                                    <td class="text-sm">
+                                        <div class="font-medium text-gray-900">{{ $jadwal->hari_tanggal }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="font-semibold text-gray-900">{{ $jadwal->mata_pelajaran }}</div>
+                                        @if ($jadwal->keterangan)
+                                            <div class="text-xs text-gray-500">{{ $jadwal->keterangan }}</div>
+                                        @endif
+                                    </td>
+                                    <td class="text-center text-sm font-mono text-gray-600">{{ $jadwal->waktu }}</td>
+                                    <td class="text-center">
+                                        <input type="number"
+                                            wire:model.lazy="jadwalData.{{ $jadwal->id }}.jumlah_soal"
+                                            class="form-input w-24 mx-auto text-center text-sm" min="0"
+                                            placeholder="0">
+                                    </td>
+                                    <td class="text-center">
+                                        <input type="number"
+                                            wire:model.lazy="jadwalData.{{ $jadwal->id }}.jumlah_cadangan"
+                                            class="form-input w-24 mx-auto text-center text-sm" min="0"
+                                            placeholder="0">
+                                    </td>
+                                    <td class="text-center">
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 text-sm font-bold">
+                                            {{ (int) ($jadwalData[$jadwal->id]['jumlah_soal'] ?? 0) + (int) ($jadwalData[$jadwal->id]['jumlah_cadangan'] ?? 0) }}
+                                        </span>
+                                    </td>
+                                </tr>
                             @endforeach
-                        </div>
-                    </div>
-                @endif
+                        </tbody>
+                    </table>
+                </div>
 
-                <div class="pt-5 border-t border-gray-100">
-                    <button onclick="window.print()"
-                        class="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl text-sm font-medium text-white hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-sm shadow-emerald-500/25">
+                <!-- Action Buttons -->
+                <div class="p-4 border-t border-gray-100 bg-gray-50/50 flex items-center justify-end gap-3">
+                    <button wire:click="save"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl text-sm font-medium text-white hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-sm shadow-blue-500/25">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7">
+                            </path>
+                        </svg>
+                        Simpan
+                    </button>
+                    <button
+                        onclick="document.getElementById('print-area').style.display='block'; setTimeout(() => { window.print(); document.getElementById('print-area').style.display='none'; }, 100);"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl text-sm font-medium text-white hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-sm shadow-emerald-500/25">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
@@ -133,97 +148,79 @@
                         Cetak Label
                     </button>
                 </div>
-            </div>
+            @else
+                <div class="text-center py-12 text-gray-500">
+                    <svg class="mx-auto h-12 w-12 text-gray-300 mb-4" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                    <p>Belum ada jadwal ujian untuk kelas ini.</p>
+                    <p class="text-sm mt-1">Silakan buat jadwal terlebih dahulu.</p>
+                </div>
+            @endif
         </div>
+    </div>
 
-        <!-- Preview Labels -->
-        <div class="card lg:col-span-2 overflow-hidden" id="print-area">
-            <div class="p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white print:hidden">
-                <h3 class="text-lg font-semibold text-gray-900">Preview Label</h3>
-                <p class="text-sm text-gray-500 mt-0.5">Label akan dicetak 2 kolom per halaman</p>
-            </div>
-            <div class="p-5 print-content">
-                @php
-                    $jadwalsToPrint = $selectedJadwalId ? [$selectedJadwal] : $jadwalList;
-                    $hariIndonesiaPrint = [
-                        'Sunday' => 'MINGGU',
-                        'Monday' => 'SENIN',
-                        'Tuesday' => 'SELASA',
-                        'Wednesday' => 'RABU',
-                        'Thursday' => 'KAMIS',
-                        'Friday' => 'JUMAT',
-                        'Saturday' => 'SABTU',
-                    ];
-                @endphp
+    <!-- Print Area (hidden, shown only during print) -->
+    <div id="print-area" style="display: none;">
+        @php
+            $hariIndonesiaPrint = [
+                'Sunday' => 'MINGGU',
+                'Monday' => 'SENIN',
+                'Tuesday' => 'SELASA',
+                'Wednesday' => 'RABU',
+                'Thursday' => 'KAMIS',
+                'Friday' => 'JUMAT',
+                'Saturday' => 'SABTU',
+            ];
+        @endphp
 
-                <div class="grid grid-cols-2 gap-4 print:gap-2">
-                    @foreach ($jadwalsToPrint as $jadwal)
-                        @if ($jadwal)
-                            @foreach ($ruangList as $ruang)
-                                <div
-                                    class="border-2 border-black p-4 print:p-3 text-center break-inside-avoid page-break-inside-avoid">
-                                    <div class="text-xs font-bold mb-1">
-                                        {{ strtoupper($schoolSettings['nama_sekolah'] ?? 'NAMA SEKOLAH') }}</div>
-                                    <div class="text-lg font-bold border-b-2 border-black pb-2 mb-2">
-                                        {{ strtoupper($kegiatanUjian->nama_ujian) }}
+        <div class="grid grid-cols-2 gap-4 print:gap-2">
+            @foreach ($jadwals as $jadwal)
+                @if (($jadwalData[$jadwal->id]['jumlah_soal'] ?? 0) > 0)
+                    @foreach ($ruangList as $ruang)
+                        <div
+                            class="border-2 border-black p-4 print:p-3 text-center break-inside-avoid page-break-inside-avoid">
+                            <div class="text-xs font-bold mb-1">
+                                {{ strtoupper($schoolSettings['nama_sekolah'] ?? 'NAMA SEKOLAH') }}</div>
+                            <div class="text-lg font-bold border-b-2 border-black pb-2 mb-2">
+                                {{ strtoupper($kegiatanUjian->nama_ujian) }}
+                            </div>
+                            <div class="space-y-1 text-sm">
+                                <div class="font-bold text-lg">{{ $jadwal->mata_pelajaran }}</div>
+                                @if ($jadwal->kelompok_kelas)
+                                    <div class="font-semibold">{{ $jadwal->kelompok_kelas }}</div>
+                                @endif
+                                <div>{{ $hariIndonesiaPrint[$jadwal->tanggal->format('l')] }},
+                                    {{ $jadwal->tanggal->format('d/m/Y') }}</div>
+                                <div>Waktu: {{ $jadwal->waktu }}</div>
+                                <div class="border-t border-black pt-2 mt-2">
+                                    <span class="font-bold text-xl">RUANG {{ $ruang->kode }}</span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-xs mt-2">
+                                    <div class="border border-gray-400 p-1">
+                                        <div class="font-semibold">Jumlah Soal</div>
+                                        <div class="text-lg font-bold">
+                                            {{ $jadwalData[$jadwal->id]['jumlah_soal'] ?? 0 }}</div>
                                     </div>
-                                    <div class="space-y-1 text-sm">
-                                        <div class="font-bold text-lg">{{ $jadwal->mata_pelajaran }}</div>
-                                        @if ($jadwal->kelompok_kelas)
-                                            <div class="font-semibold text-blue-700">{{ $jadwal->kelompok_kelas }}
-                                            </div>
-                                        @endif
-                                        <div>{{ $hariIndonesiaPrint[$jadwal->tanggal->format('l')] }},
-                                            {{ $jadwal->tanggal->format('d/m/Y') }}</div>
-                                        <div>Waktu: {{ $jadwal->waktu }}</div>
-                                        <div class="border-t border-black pt-2 mt-2">
-                                            <span class="font-bold text-xl">RUANG {{ $ruang->kode }}</span>
-                                        </div>
-                                        <div class="grid grid-cols-2 gap-2 text-xs mt-2">
-                                            <div class="border border-gray-400 p-1">
-                                                <div class="font-semibold">Jumlah Soal</div>
-                                                <div class="text-lg font-bold">{{ $ruang->jumlah_siswa }}</div>
-                                            </div>
-                                            <div class="border border-gray-400 p-1">
-                                                <div class="font-semibold">Cadangan</div>
-                                                <div class="text-lg font-bold">{{ $jumlahCadangan }}</div>
-                                            </div>
-                                        </div>
-                                        <div class="text-xs font-semibold mt-2 border-t border-black pt-1">
-                                            Total: {{ $ruang->jumlah_siswa + $jumlahCadangan }} lembar
-                                        </div>
+                                    <div class="border border-gray-400 p-1">
+                                        <div class="font-semibold">Cadangan</div>
+                                        <div class="text-lg font-bold">
+                                            {{ $jadwalData[$jadwal->id]['jumlah_cadangan'] ?? 0 }}</div>
                                     </div>
                                 </div>
-                            @endforeach
-                        @endif
+                                <div class="text-xs font-semibold mt-2 border-t border-black pt-1">
+                                    Total:
+                                    {{ ($jadwalData[$jadwal->id]['jumlah_soal'] ?? 0) + ($jadwalData[$jadwal->id]['jumlah_cadangan'] ?? 0) }}
+                                    lembar
+                                </div>
+                            </div>
+                        </div>
                     @endforeach
-                </div>
-
-                @if ($jadwalList->isEmpty())
-                    <div class="text-center py-12 text-gray-500">
-                        <svg class="mx-auto h-12 w-12 text-gray-300 mb-4" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                            </path>
-                        </svg>
-                        <p>Belum ada jadwal ujian. Silakan buat jadwal terlebih dahulu.</p>
-                    </div>
                 @endif
-
-                @if ($ruangList->isEmpty())
-                    <div class="text-center py-12 text-gray-500">
-                        <svg class="mx-auto h-12 w-12 text-gray-300 mb-4" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                            </path>
-                        </svg>
-                        <p>{{ $hasPenempatan ? 'Tidak ada ruang yang memiliki penempatan siswa.' : 'Belum ada ruang ujian. Silakan buat ruang ujian terlebih dahulu.' }}
-                        </p>
-                    </div>
-                @endif
-            </div>
+            @endforeach
         </div>
     </div>
 
@@ -245,6 +242,7 @@
             }
 
             #print-area {
+                display: block !important;
                 position: absolute;
                 left: 0;
                 top: 0;

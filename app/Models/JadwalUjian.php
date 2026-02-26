@@ -17,11 +17,15 @@ class JadwalUjian extends Model
         'mata_pelajaran',
         'kelompok_kelas',
         'keterangan',
+        'jumlah_soal',
+        'jumlah_cadangan',
         'sort_order',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
+        'jumlah_soal' => 'integer',
+        'jumlah_cadangan' => 'integer',
     ];
 
     /**

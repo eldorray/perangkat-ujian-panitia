@@ -18,80 +18,104 @@ class LabelAmplopSoal extends Component
 {
     public KegiatanUjian $kegiatanUjian;
 
-    // Selected jadwal for printing
-    public ?int $selectedJadwalId = null;
+    // Selected kelompok kelas tab
+    public string $selectedKelompok = '';
 
-    // Cadangan soal
-    public int $jumlahCadangan = 2;
+    // Jadwal data: jadwal_id => ['jumlah_soal' => x, 'jumlah_cadangan' => y]
+    public array $jadwalData = [];
 
     public function mount(int $id): void
     {
         $this->kegiatanUjian = KegiatanUjian::with('tahunAjaran')->findOrFail($id);
 
-        // Load saved settings
-        $settings = session("label_amplop_settings_{$id}", []);
-        $this->jumlahCadangan = $settings['jumlahCadangan'] ?? 2;
+        // Auto-select first kelompok
+        $kelompokList = $this->getKelompokList();
+        if ($kelompokList->isNotEmpty()) {
+            $this->selectedKelompok = $kelompokList->first();
+        }
+
+        $this->loadJadwalData();
     }
 
-    public function updatedJumlahCadangan(): void
+    public function updatedSelectedKelompok(): void
     {
-        $this->saveSettings();
+        $this->loadJadwalData();
     }
 
-    protected function saveSettings(): void
+    protected function loadJadwalData(): void
     {
-        session(["label_amplop_settings_{$this->kegiatanUjian->id}" => [
-            'jumlahCadangan' => $this->jumlahCadangan,
-        ]]);
+        $jadwals = $this->getFilteredJadwals();
+        $this->jadwalData = [];
+        foreach ($jadwals as $jadwal) {
+            $this->jadwalData[$jadwal->id] = [
+                'jumlah_soal' => $jadwal->jumlah_soal ?? 0,
+                'jumlah_cadangan' => $jadwal->jumlah_cadangan ?? 0,
+            ];
+        }
+    }
+
+    protected function getKelompokList()
+    {
+        return JadwalUjian::where('kegiatan_ujian_id', $this->kegiatanUjian->id)
+            ->whereNotNull('kelompok_kelas')
+            ->where('kelompok_kelas', '!=', '')
+            ->distinct()
+            ->orderBy('kelompok_kelas')
+            ->pluck('kelompok_kelas');
+    }
+
+    protected function getFilteredJadwals()
+    {
+        $query = JadwalUjian::where('kegiatan_ujian_id', $this->kegiatanUjian->id);
+
+        if ($this->selectedKelompok) {
+            $query->where('kelompok_kelas', $this->selectedKelompok);
+        }
+
+        return $query->orderBy('tanggal')
+            ->orderBy('sort_order')
+            ->orderBy('jam_mulai')
+            ->get();
+    }
+
+    public function save(): void
+    {
+        foreach ($this->jadwalData as $jadwalId => $data) {
+            JadwalUjian::where('id', $jadwalId)->update([
+                'jumlah_soal' => max(0, (int) ($data['jumlah_soal'] ?? 0)),
+                'jumlah_cadangan' => max(0, (int) ($data['jumlah_cadangan'] ?? 0)),
+            ]);
+        }
+
+        session()->flash('message', 'Data jumlah soal berhasil disimpan.');
     }
 
     public function render(): View
     {
-        $jadwalList = JadwalUjian::where('kegiatan_ujian_id', $this->kegiatanUjian->id)
-            ->orderBy('tanggal')
-            ->orderBy('jam_mulai')
-            ->get();
+        $kelompokList = $this->getKelompokList();
+        $jadwals = $this->getFilteredJadwals();
 
-        $selectedJadwal = $this->selectedJadwalId
-            ? JadwalUjian::find($this->selectedJadwalId)
-            : null;
-
-        // Get student count per room from penempatan data
+        // Get rooms with student count for printing
         $siswaPerRuang = PenempatanRuangUjian::where('kegiatan_ujian_id', $this->kegiatanUjian->id)
             ->selectRaw('ruang_ujian_id, COUNT(*) as jumlah_siswa')
             ->groupBy('ruang_ujian_id')
             ->pluck('jumlah_siswa', 'ruang_ujian_id');
 
-        $hasPenempatan = $siswaPerRuang->isNotEmpty();
-
-        if ($hasPenempatan) {
-            // Only get rooms that have students placed
+        if ($siswaPerRuang->isNotEmpty()) {
             $ruangList = RuangUjian::whereIn('id', $siswaPerRuang->keys())
                 ->orderBy('kode')
-                ->get()
-                ->map(function ($ruang) use ($siswaPerRuang) {
-                    $ruang->jumlah_siswa = $siswaPerRuang[$ruang->id] ?? 0;
-                    return $ruang;
-                });
+                ->get();
         } else {
-            // Fallback: all rooms with kapasitas as jumlah_siswa
-            $ruangList = RuangUjian::orderBy('kode')
-                ->get()
-                ->map(function ($ruang) {
-                    $ruang->jumlah_siswa = $ruang->kapasitas;
-                    return $ruang;
-                });
+            $ruangList = RuangUjian::orderBy('kode')->get();
         }
 
         $schoolSettings = SchoolSetting::getAllSettings();
 
         return view('livewire.admin.label-amplop-soal', compact(
-            'jadwalList',
+            'kelompokList',
+            'jadwals',
             'ruangList',
-            'selectedJadwal',
-            'schoolSettings',
-            'hasPenempatan'
+            'schoolSettings'
         ));
     }
 }
-

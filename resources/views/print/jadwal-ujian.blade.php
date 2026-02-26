@@ -223,12 +223,7 @@
         </button>
     </div>
 
-    @php
-        // Chunk the kelompok groups into pairs of 2
-        $kelompokChunks = $jadwalGrouped->chunk(2);
-    @endphp
-
-    @foreach ($kelompokChunks as $chunkIndex => $chunk)
+    @foreach ($printGroups as $groupLabel => $kelompokInGroup)
         <div class="container page-section">
             <!-- Kop Surat -->
             <div class="kop-surat">
@@ -255,13 +250,20 @@
                 </div>
             </div>
 
-            <!-- Tabel Jadwal per Kelompok Kelas (2 per halaman) -->
-            @foreach ($chunk as $kelompok => $jadwalByDate)
-                @if ($jadwalGrouped->count() > 1)
-                    <h2
-                        style="font-size: 12pt; font-weight: bold; margin-top: 15px; margin-bottom: 10px; text-align: center; background: #f0f0f0; padding: 5px;">
+            <!-- Group Label -->
+            @if ($printGroups->count() > 1)
+                <h2
+                    style="font-size: 12pt; font-weight: bold; margin-top: 15px; margin-bottom: 10px; text-align: center; background: #f0f0f0; padding: 5px;">
+                    {{ $groupLabel }}
+                </h2>
+            @endif
+
+            <!-- Tabel Jadwal per Kelompok Kelas dalam group ini -->
+            @foreach ($kelompokInGroup as $kelompok => $jadwalByDate)
+                @if ($kelompokInGroup->count() > 1)
+                    <h3 style="font-size: 11pt; font-weight: bold; margin-top: 10px; margin-bottom: 8px;">
                         {{ $kelompok }}
-                    </h2>
+                    </h3>
                 @endif
 
                 <table class="jadwal-table">

@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Models\JadwalUjian;
 use App\Models\KegiatanUjian;
+use App\Models\PenempatanRuangUjian;
 use App\Models\RuangUjian;
 use App\Models\SchoolSetting;
 use Illuminate\View\View;
@@ -20,8 +21,7 @@ class LabelAmplopSoal extends Component
     // Selected jadwal for printing
     public ?int $selectedJadwalId = null;
 
-    // Custom settings
-    public int $jumlahSoalPerRuang = 20;
+    // Cadangan soal
     public int $jumlahCadangan = 2;
 
     public function mount(int $id): void
@@ -30,13 +30,7 @@ class LabelAmplopSoal extends Component
 
         // Load saved settings
         $settings = session("label_amplop_settings_{$id}", []);
-        $this->jumlahSoalPerRuang = $settings['jumlahSoalPerRuang'] ?? 20;
         $this->jumlahCadangan = $settings['jumlahCadangan'] ?? 2;
-    }
-
-    public function updatedJumlahSoalPerRuang(): void
-    {
-        $this->saveSettings();
     }
 
     public function updatedJumlahCadangan(): void
@@ -47,7 +41,6 @@ class LabelAmplopSoal extends Component
     protected function saveSettings(): void
     {
         session(["label_amplop_settings_{$this->kegiatanUjian->id}" => [
-            'jumlahSoalPerRuang' => $this->jumlahSoalPerRuang,
             'jumlahCadangan' => $this->jumlahCadangan,
         ]]);
     }
@@ -59,11 +52,36 @@ class LabelAmplopSoal extends Component
             ->orderBy('jam_mulai')
             ->get();
 
-        $ruangList = RuangUjian::orderBy('kode')->get();
-
         $selectedJadwal = $this->selectedJadwalId
             ? JadwalUjian::find($this->selectedJadwalId)
             : null;
+
+        // Get student count per room from penempatan data
+        $siswaPerRuang = PenempatanRuangUjian::where('kegiatan_ujian_id', $this->kegiatanUjian->id)
+            ->selectRaw('ruang_ujian_id, COUNT(*) as jumlah_siswa')
+            ->groupBy('ruang_ujian_id')
+            ->pluck('jumlah_siswa', 'ruang_ujian_id');
+
+        $hasPenempatan = $siswaPerRuang->isNotEmpty();
+
+        if ($hasPenempatan) {
+            // Only get rooms that have students placed
+            $ruangList = RuangUjian::whereIn('id', $siswaPerRuang->keys())
+                ->orderBy('kode')
+                ->get()
+                ->map(function ($ruang) use ($siswaPerRuang) {
+                    $ruang->jumlah_siswa = $siswaPerRuang[$ruang->id] ?? 0;
+                    return $ruang;
+                });
+        } else {
+            // Fallback: all rooms with kapasitas as jumlah_siswa
+            $ruangList = RuangUjian::orderBy('kode')
+                ->get()
+                ->map(function ($ruang) {
+                    $ruang->jumlah_siswa = $ruang->kapasitas;
+                    return $ruang;
+                });
+        }
 
         $schoolSettings = SchoolSetting::getAllSettings();
 
@@ -71,7 +89,9 @@ class LabelAmplopSoal extends Component
             'jadwalList',
             'ruangList',
             'selectedJadwal',
-            'schoolSettings'
+            'schoolSettings',
+            'hasPenempatan'
         ));
     }
 }
+

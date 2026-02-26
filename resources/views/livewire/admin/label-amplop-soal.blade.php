@@ -47,7 +47,7 @@
         <div class="card lg:col-span-1 overflow-hidden">
             <div class="p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
                 <h3 class="text-lg font-semibold text-gray-900">Pengaturan</h3>
-                <p class="text-sm text-gray-500 mt-0.5">Atur jadwal dan jumlah soal</p>
+                <p class="text-sm text-gray-500 mt-0.5">Pilih jadwal dan atur cadangan soal</p>
             </div>
             <div class="p-5 space-y-5">
                 <div>
@@ -75,13 +75,53 @@
                     </select>
                 </div>
                 <div>
-                    <label class="form-label">Jumlah Soal per Ruang</label>
-                    <input type="number" wire:model.live="jumlahSoalPerRuang" class="form-input w-full" min="1">
-                </div>
-                <div>
-                    <label class="form-label">Soal Cadangan</label>
+                    <label class="form-label">Soal Cadangan (per ruang)</label>
                     <input type="number" wire:model.live="jumlahCadangan" class="form-input w-full" min="0">
                 </div>
+
+                <!-- Info jumlah soal per ruang -->
+                <div
+                    class="rounded-xl border p-3 {{ $hasPenempatan ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200' }}">
+                    <div class="flex items-start gap-2">
+                        @if ($hasPenempatan)
+                            <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div class="text-sm text-green-800">
+                                <strong>Jumlah soal otomatis</strong> dari data penempatan siswa per ruang.
+                            </div>
+                        @else
+                            <svg class="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.072 16.5c-.77.833.192 2.5 1.732 2.5z">
+                                </path>
+                            </svg>
+                            <div class="text-sm text-amber-800">
+                                <strong>Belum ada penempatan.</strong> Jumlah soal menggunakan kapasitas ruang.
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Ringkasan per ruang -->
+                @if ($ruangList->isNotEmpty())
+                    <div>
+                        <label class="form-label mb-2">Jumlah Soal per Ruang</label>
+                        <div class="space-y-1.5 max-h-48 overflow-y-auto">
+                            @foreach ($ruangList as $ruang)
+                                <div class="flex items-center justify-between text-sm bg-gray-50 rounded-lg px-3 py-2">
+                                    <span class="font-medium text-gray-700">Ruang {{ $ruang->kode }}</span>
+                                    <span class="text-gray-900 font-semibold">{{ $ruang->jumlah_siswa }} +
+                                        {{ $jumlahCadangan }} = {{ $ruang->jumlah_siswa + $jumlahCadangan }}</span>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 <div class="pt-5 border-t border-gray-100">
                     <button onclick="window.print()"
                         class="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl text-sm font-medium text-white hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 shadow-sm shadow-emerald-500/25">
@@ -142,7 +182,7 @@
                                         <div class="grid grid-cols-2 gap-2 text-xs mt-2">
                                             <div class="border border-gray-400 p-1">
                                                 <div class="font-semibold">Jumlah Soal</div>
-                                                <div class="text-lg font-bold">{{ $jumlahSoalPerRuang }}</div>
+                                                <div class="text-lg font-bold">{{ $ruang->jumlah_siswa }}</div>
                                             </div>
                                             <div class="border border-gray-400 p-1">
                                                 <div class="font-semibold">Cadangan</div>
@@ -150,7 +190,7 @@
                                             </div>
                                         </div>
                                         <div class="text-xs font-semibold mt-2 border-t border-black pt-1">
-                                            Total: {{ $jumlahSoalPerRuang + $jumlahCadangan }} lembar
+                                            Total: {{ $ruang->jumlah_siswa + $jumlahCadangan }} lembar
                                         </div>
                                     </div>
                                 </div>
@@ -179,7 +219,8 @@
                                 d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
                             </path>
                         </svg>
-                        <p>Belum ada ruang ujian. Silakan buat ruang ujian terlebih dahulu.</p>
+                        <p>{{ $hasPenempatan ? 'Tidak ada ruang yang memiliki penempatan siswa.' : 'Belum ada ruang ujian. Silakan buat ruang ujian terlebih dahulu.' }}
+                        </p>
                     </div>
                 @endif
             </div>

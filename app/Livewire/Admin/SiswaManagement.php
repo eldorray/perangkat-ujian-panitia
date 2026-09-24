@@ -21,6 +21,8 @@ class SiswaManagement extends Component
     public string $statusFilter = '';
     public bool $showModal = false;
     public bool $showDeleteModal = false;
+    public bool $showDeleteAllModal = false;
+    public string $deleteAllConfirmation = '';
     public bool $showSyncModal = false;
     public bool $showDetailModal = false;
     public ?int $editingId = null;
@@ -186,6 +188,33 @@ class SiswaManagement extends Component
         }
         $this->showDeleteModal = false;
         $this->deletingId = null;
+    }
+
+    public function confirmDeleteAll(): void
+    {
+        $this->deleteAllConfirmation = '';
+        $this->resetValidation('deleteAllConfirmation');
+        $this->showDeleteAllModal = true;
+    }
+
+    public function deleteAll(): void
+    {
+        if (! $this->showDeleteAllModal) {
+            return;
+        }
+
+        $this->validate([
+            'deleteAllConfirmation' => 'required|in:HAPUS SEMUA',
+        ], [
+            'deleteAllConfirmation.in' => 'Ketik HAPUS SEMUA untuk melanjutkan.',
+            'deleteAllConfirmation.required' => 'Ketik HAPUS SEMUA untuk melanjutkan.',
+        ]);
+
+        $deleted = Siswa::query()->delete();
+        $this->showDeleteAllModal = false;
+        $this->deleteAllConfirmation = '';
+        $this->resetPage();
+        session()->flash('success', "{$deleted} data siswa berhasil dihapus.");
     }
 
     public function openSyncModal(): void
@@ -364,6 +393,8 @@ class SiswaManagement extends Component
     {
         $this->showModal = false;
         $this->showDeleteModal = false;
+        $this->showDeleteAllModal = false;
+        $this->deleteAllConfirmation = '';
         $this->showSyncModal = false;
         $this->showDetailModal = false;
         $this->resetFormFields();
@@ -404,6 +435,8 @@ class SiswaManagement extends Component
             ->orderBy('nama_lengkap')
             ->paginate(10);
 
-        return view('livewire.admin.siswa-management', compact('siswas'));
+        $totalSiswa = Siswa::query()->count('*');
+
+        return view('livewire.admin.siswa-management', compact('siswas', 'totalSiswa'));
     }
 }

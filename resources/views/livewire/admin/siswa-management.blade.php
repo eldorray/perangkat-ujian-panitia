@@ -25,7 +25,9 @@
                         <option value="Tidak Aktif">Tidak Aktif</option>
                     </select>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" wire:click="confirmDeleteAll" class="btn btn-destructive"
+                        @disabled($totalSiswa === 0)>Hapus Semua</button>
                     <button wire:click="openSyncModal" class="btn btn-secondary">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -365,6 +367,38 @@
                             <button wire:click="closeModal" class="btn btn-secondary">Batal</button>
                             <button wire:click="delete" class="btn btn-destructive">Hapus</button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    @endif
+
+    <!-- Delete All Modal -->
+    @if ($showDeleteAllModal)
+        <template x-teleport="#modal-portal">
+            <div class="fixed inset-0 z-[9999] overflow-y-auto">
+                <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" wire:click="closeModal"></div>
+                <div class="fixed inset-0 flex items-center justify-center p-4">
+                    <div class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-6">
+                        <h3 class="text-lg font-semibold mb-2">Hapus Semua Siswa</h3>
+                        <p class="text-gray-600 mb-4">Anda akan menghapus seluruh {{ $totalSiswa }} data siswa,
+                            termasuk yang tidak terlihat karena filter atau halaman lain. Data penempatan ujian siswa
+                            juga akan terhapus. Tindakan ini tidak dapat dibatalkan.</p>
+                        <form wire:submit="deleteAll">
+                            <label for="delete-all-confirmation" class="block text-sm font-medium mb-2">
+                                Ketik <strong>HAPUS SEMUA</strong> untuk konfirmasi
+                            </label>
+                            <input id="delete-all-confirmation" type="text" wire:model="deleteAllConfirmation"
+                                autocomplete="off" class="input w-full" placeholder="HAPUS SEMUA">
+                            @error('deleteAllConfirmation')
+                                <span class="text-red-600 text-sm">{{ $message }}</span>
+                            @enderror
+                            <div class="flex justify-end gap-3 mt-5">
+                                <button type="button" wire:click="closeModal" class="btn btn-secondary">Batal</button>
+                                <button type="submit" class="btn btn-destructive" wire:loading.attr="disabled"
+                                    wire:target="deleteAll">Hapus Semua Siswa</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
